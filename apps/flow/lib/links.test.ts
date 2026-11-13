@@ -30,6 +30,18 @@ describe("exactOrigin", () => {
 })
 
 describe("flowHref", () => {
+  it("keeps exact migration reviews in Flow without trusting arbitrary routes", () => {
+    expect(flowHref(`/imports/products/${ID}`, null)).toBe(
+      `/imports/products/${ID}`
+    )
+    for (const suffix of [
+      "/../settings",
+      "?approve=true",
+      "/approve",
+      "#confirmation",
+    ])
+      expect(flowHref(`/imports/products/${ID}${suffix}`, OFFICE)).toBe("")
+  })
   // Same list as apps/office/lib/voice/pages.ts; a page added there needs adding here.
   it("knows every Office page the assistant's page tool can open", () => {
     expect([...OFFICE_PAGES].sort()).toEqual(

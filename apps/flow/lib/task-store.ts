@@ -116,14 +116,17 @@ export function loadTask(owner: string): Partial<TaskState> {
  */
 export function approvalOutcome(
   decided: VoiceReview,
-  tasks: RecoveryTask[]
+  tasks: RecoveryTask[],
+  current: VoiceOutcome | null = null
 ): VoiceOutcome | null {
+  if (current && current.status !== "unknown") return null
   const task = tasks.find((t) =>
     decided.batchId
       ? t.data?.batchId === decided.batchId
       : !t.data?.batchId && t.data?.operation === decided.operationId
   )
   if (!task || task.status === "awaiting_review") return null
+  if (current && task.status !== "completed") return null
   return { status: task.status === "completed" ? "completed" : "unknown" }
 }
 
@@ -187,8 +190,8 @@ export function useTaskWatch(voice: {
   const { recoveredTasks } = voice
   useEffect(() => {
     const { decided, result } = taskStore.getState()
-    if (review || !decided || result || taskStore.getState().owner !== owner) return
-    const answer = approvalOutcome(decided, recoveredTasks)
+    if (review || !decided || taskStore.getState().owner !== owner) return
+    const answer = approvalOutcome(decided, recoveredTasks, result)
     if (answer) taskStore.setState({ result: answer })
   }, [review, recoveredTasks, owner])
   useEffect(() => {

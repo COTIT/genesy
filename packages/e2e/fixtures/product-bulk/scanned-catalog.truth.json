@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Scanned Rice",
+    "barcode": "0000123456789",
+    "price": "12.50"
+  },
+  {
+    "name": "Scanned Beans",
+    "barcode": "0000000000042",
+    "price": "3.00"
+  }
+]

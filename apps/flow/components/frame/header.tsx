@@ -206,6 +206,20 @@ export function Header({ phase }: { phase: SessionPhase["phase"] }) {
             {t("history.title")}
           </Link>
         ) : null}
+        <Link
+          href="/imports/products"
+          prefetch={false}
+          aria-current={
+            pathname.startsWith("/imports/products") ? "page" : undefined
+          }
+          className={buttonVariants({
+            variant: "ghost",
+            size: "sm",
+            className: "min-h-11",
+          })}
+        >
+          {t("productBulk.title")}
+        </Link>
         <WorkspacePicker />
         {/* Every header control is a 44 px target (SW7). */}
         <LocaleSwitcher className="min-h-11" />

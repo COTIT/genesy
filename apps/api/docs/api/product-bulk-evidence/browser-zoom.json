@@ -1,0 +1,61 @@
+{
+  "browser": "156.0.8078.4",
+  "settingsZoom": "200%",
+  "metrics": {
+    "innerWidth": 640,
+    "outerWidth": 1280,
+    "innerHeight": 356,
+    "outerHeight": 800,
+    "devicePixelRatio": 2,
+    "pinchScale": 1,
+    "cssZoom": "1",
+    "mainWidth": 624,
+    "mainScrollWidth": 624
+  },
+  "layout": {
+    "layoutViewport": {
+      "pageX": 0,
+      "pageY": 0,
+      "clientWidth": 1280,
+      "clientHeight": 713
+    },
+    "visualViewport": {
+      "offsetX": 0,
+      "offsetY": 0,
+      "pageX": 0,
+      "pageY": 0,
+      "clientWidth": 1280,
+      "clientHeight": 713,
+      "scale": 1,
+      "zoom": 2
+    },
+    "contentSize": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 713
+    },
+    "cssLayoutViewport": {
+      "pageX": 0,
+      "pageY": 0,
+      "clientWidth": 640,
+      "clientHeight": 356
+    },
+    "cssVisualViewport": {
+      "offsetX": 0,
+      "offsetY": 0,
+      "pageX": 0,
+      "pageY": 0,
+      "clientWidth": 640,
+      "clientHeight": 356.5,
+      "scale": 1,
+      "zoom": 2
+    },
+    "cssContentSize": {
+      "x": 0,
+      "y": 0,
+      "width": 640,
+      "height": 356
+    }
+  }
+}

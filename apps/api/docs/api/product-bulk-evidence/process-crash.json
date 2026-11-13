@@ -1,0 +1,81 @@
+{
+  "started_at": "2026-11-13T18:46:51.320896+00:00",
+  "database": "bulk_crash_1794595611",
+  "container": "bulk-crash-1794595611",
+  "binary": "/private/tmp/flow-product-fields/.linux-validation/artifacts-final/genesy-360-api",
+  "binary_sha256": "bbb002519263e51103c66a71751397dc4ce22acba1777b61cf45c5113edfe63a",
+  "image": "rust:1.99.0-slim-trixie@sha256:2752b332db73fdbb7dc576f06c82ed1f312005784ef913d7e04a28f5f55dc581",
+  "migration": "applied 99 migrations, now at 20261114020000",
+  "container_id": "21749058f4be6e441cbaea83c1d4f256ee90bd0b2409cac2d6fce7f6155bc5b8",
+  "runtime_limits": {
+    "memory": 536870912,
+    "user": "65532:65532",
+    "readonly": true
+  },
+  "native_control": {
+    "variants": 1,
+    "history": 7,
+    "stocks": 1
+  },
+  "workspace_id": "01a1d63b-e992-7106-b4d2-b2361b1f4bda",
+  "run_id": "01a1d63b-ea26-78e1-8fac-e655f109cdd6",
+  "review_id": "01a1d63b-efed-751c-84a0-00b6b4250ae2",
+  "midrow_proven_at": "2026-11-13T18:46:55.643546+00:00",
+  "before_crash_visible": {
+    "products": 0,
+    "variants": 0,
+    "history": 0,
+    "stocks": 0,
+    "events": 0,
+    "row_receipts": 0,
+    "review_receipts": 0
+  },
+  "crashed_job": {
+    "id": "01a1d63b-f054-7ca9-b736-d9ede161c472",
+    "status": "running",
+    "locked_by": "01a1d63b-f337-70c0-b14d-a77986a4fa6a",
+    "locked_until": "2026-11-13T18:47:55.541561+00:00",
+    "progress_done": 0,
+    "attempts": 1
+  },
+  "peak_container_bytes": 157786112,
+  "killed_at": "2026-11-13T18:46:55.932697+00:00",
+  "crash_exit": {
+    "ExitCode": 137,
+    "Running": false,
+    "OOMKilled": false
+  },
+  "after_crash_visible": {
+    "products": 0,
+    "variants": 0,
+    "history": 0,
+    "stocks": 0,
+    "events": 0,
+    "row_receipts": 0,
+    "review_receipts": 0
+  },
+  "restarted_at": "2026-11-13T18:46:56.159919+00:00",
+  "lease_recovery": "Natural 60-second rail lease and 30-second scheduler; no SQL lease edits.",
+  "completed_at": "2026-11-13T18:48:09.183457+00:00",
+  "final_counts": {
+    "products": 60,
+    "variants": 60,
+    "history": 420,
+    "stocks": 60,
+    "events": 60,
+    "row_receipts": 60,
+    "review_receipts": 60
+  },
+  "exact_once": {
+    "names": 60,
+    "numbers": 60,
+    "receipt_products": 60,
+    "completed_receipts": 60,
+    "bad_receipt_links": 0,
+    "single_history_groups": 0,
+    "single_event_groups": 0
+  },
+  "passed": true,
+  "cleanup_errors": [],
+  "finished_at": "2026-11-13T18:48:09.643022+00:00"
+}

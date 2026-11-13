@@ -46,6 +46,7 @@ pub use http::{
 pub use modules::gateway;
 pub use modules::invoice_payments;
 pub use modules::invoices::gateway as invoice_gateway;
+pub use modules::{product_bulk_runs, product_fields};
 
 /// Largest JSON body is a relation with its addresses (capped at 50); 64 KiB covers it
 /// and keeps junk bodies (axum default 2 MB) off the parser.
@@ -86,6 +87,9 @@ pub struct AppState {
     pub credentials: Option<std::sync::Arc<CredentialKey>>,
     /// Server-only assistant bridge signing key; None refuses signed controls.
     pub assistant_bridge_secret: Option<std::sync::Arc<AssistantSecret>>,
+    /// Rollout admission switch; disabling it does not hide or discard existing runs.
+    pub product_bulk_enabled: bool,
+    pub anthropic_api_key: Option<std::sync::Arc<AssistantSecret>>,
     /// File objects (the uploads bucket); None answers file routes with 503.
     pub files: Option<storage::Store>,
     /// HTML to PDF (Gotenberg); None answers PDF routes with 503.

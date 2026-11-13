@@ -200,6 +200,65 @@ run compose ps || fail "compose with uploads: $(cat "$t/out")"
 grep -q "^docker compose -f $d/docker-compose.production.yml -f $d/docker-compose.stripe.yml -f $d/docker-compose.uploads.yml --env-file" "$CALLS" \
   || fail "uploads overlay not added with its key: $(cat "$CALLS")"
 
+# Product imports keep provider/storage configuration after admission is paused, in both envs.
+bulk_root="$t/bulk-root"
+bulk_run() {
+  : > "$CALLS"
+  GENESY_ROOT="$bulk_root" bash -c '. "$1"; env_setup "$2"; "${COMPOSE[@]}" ps' \
+    _ "$HERE/ops/lib.sh" "$1" > "$t/bulk-out" 2>&1
+}
+for env in staging production; do
+  bd="$bulk_root/deploy/$env"
+  mkdir -p "$bd/secrets"
+  cp "$HERE/$env/docker-compose.$env.yml" "$HERE/$env/docker-compose.product-bulk.yml" \
+    "$HERE/$env/docker-compose.uploads.yml" "$HERE/$env/docker-compose.stripe.yml" \
+    "$HERE/$env/docker-compose.assistant.yml" "$bd/"
+  printf 'ANTHROPIC_API_KEY=fixture-env-key\n' > "$bd/.env.$env"
+  bulk_run "$env" || fail "$env default bulk chain"
+  ! grep -q product-bulk "$CALLS" || fail "$env bulk enabled by default/env key"
+  printf 'PRODUCT_BULK_ENABLED=false\n' >> "$bd/.env.$env"
+  bulk_run "$env" || fail "$env explicit bulk pause without key"
+  ! grep -q product-bulk "$CALLS" || fail "$env paused bulk chained without key"
+  printf 'PRODUCT_BULK_ENABLED=true\n' >> "$bd/.env.$env"
+  if bulk_run "$env"; then fail "$env enabled bulk accepted without key file"; fi
+  grep -q 'requires a nonempty' "$t/bulk-out" || fail "$env missing key error"
+  [[ ! -s "$CALLS" ]] || fail "$env missing key reached Docker"
+  touch "$bd/secrets/anthropic_api_key"
+  if bulk_run "$env"; then fail "$env enabled bulk accepted empty key file"; fi
+  rm "$bd/secrets/anthropic_api_key"
+  mkdir "$bd/secrets/anthropic_api_key"
+  if bulk_run "$env"; then fail "$env enabled bulk accepted key directory"; fi
+  rmdir "$bd/secrets/anthropic_api_key"
+  printf 'fixture-file-key' > "$bd/secrets/anthropic_api_key"
+  bulk_run "$env" || fail "$env enabled bulk chain"
+  grep -q -- "-f $bd/docker-compose.product-bulk.yml" "$CALLS" || fail "$env bulk overlay absent"
+  for invalid in TRUE yes 0; do
+    printf 'PRODUCT_BULK_ENABLED=%s\n' "$invalid" >> "$bd/.env.$env"
+    if bulk_run "$env"; then fail "$env accepted bulk flag $invalid"; fi
+    grep -q 'PRODUCT_BULK_ENABLED must be true or false' "$t/bulk-out" || fail "$env invalid flag error"
+  done
+  printf 'PRODUCT_BULK_ENABLED=false\n' >> "$bd/.env.$env"
+  touch "$bd/secrets/b2_uploads_key" "$bd/secrets/stripe_secret_key" \
+    "$bd/secrets/elevenlabs_api_key" "$bd/docker-compose.nodns.yml"
+  bulk_run "$env" || fail "$env paused bulk chain"
+  for overlay in nodns stripe uploads assistant product-bulk; do
+    grep -q -- "-f $bd/docker-compose.$overlay.yml" "$CALLS" || fail "$env paused bulk lost $overlay"
+  done
+  for secret_dir in ./private-secrets "$t/absolute-secrets-$env"; do
+    case "$secret_dir" in /*) key_dir="$secret_dir" ;; *) key_dir="$bd/$secret_dir" ;; esac
+    mkdir -p "$key_dir"
+    mv "$bd/secrets/anthropic_api_key" "$key_dir/anthropic_api_key"
+    printf 'SECRETS_DIR=%s\n' "$secret_dir" >> "$bd/.env.$env"
+    bulk_run "$env" || fail "$env custom secrets path $secret_dir"
+    grep -q product-bulk "$CALLS" || fail "$env paused bulk lost custom key"
+    mv "$key_dir/anthropic_api_key" "$bd/secrets/anthropic_api_key"
+  done
+  printf 'SECRETS_DIR=./secrets\nPRODUCT_BULK_ENABLED=true\n' >> "$bd/.env.$env"
+  mv "$bd/docker-compose.product-bulk.yml" "$bd/bulk-overlay-away"
+  if bulk_run "$env"; then fail "$env enabled bulk accepted missing overlay"; fi
+  grep -q 'missing .*docker-compose.product-bulk.yml' "$t/bulk-out" || fail "$env missing overlay error"
+done
+
 # No DNS yet (VPS-only nodns overlay sets traefik.enable=false): every host would answer 404, so
 # health is the containers' own state and no Traefik probe runs. Rollback uses the same check.
 touch "$d/docker-compose.nodns.yml"

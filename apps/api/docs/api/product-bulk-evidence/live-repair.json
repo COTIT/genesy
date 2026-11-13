@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-14",
+  "validation": {
+    "bulk_api": "27 passed;2 opt-in ignored",
+    "bulk_units": "27 passed;0 ignored;includes actual parser process",
+    "flow": "418 passed",
+    "history_main_fast_forward": "18 passed",
+    "clippy": "all targets passed; mechanical fixes only",
+    "openapi": "committed_spec_matches_code passed"
+  },
+  "files": {
+    "apps/api/src/modules/product_bulk_runs/claude.rs": "d5fd7189d59b33b71b41387d403bd6abe9c07192b422f28d476093e7f4605d14",
+    "apps/api/src/modules/product_bulk_runs/dto.rs": "30e2de991229e876c6e6edc8e7a9adc5f68dc6d8cb2cf17f714457745ac84374",
+    "apps/api/src/modules/product_bulk_runs/extraction.rs": "2b5c62880a982842e6b7ecea3a9f1f1cde191774398f81b1c717d9b6e3fcac77",
+    "apps/api/src/modules/product_bulk_runs/service.rs": "c1cfcba63907068cb4a94642cf485b6c6e28ac4aec426ff74526837a74528d9c",
+    "apps/api/src/modules/product_bulk_runs/worker.rs": "227913d26578b8c27bb3a6cc8c432558421f26f4555d59613c95fc190948fffa",
+    "apps/api/tests/api/product_bulk_runs.rs": "233d5a208637e1289a32555f379348c443e6dc50ab6d02846454f21b403fe270",
+    "apps/api/migrations/20261114020000_product_bulk_runs.up.sql": "0ac1c3ecfd1271adfca3c8697f47458f83e948cf545726d568e1c6e0ef9268a5",
+    "apps/flow/components/product-bulk/detail.tsx": "f622f28541bd29306504924d1fd16bd873632aa54439f019577408ddf88ddb8f",
+    "apps/flow/components/product-bulk/detail.test.tsx": "e21d2c79780dd2be7b8bf8d832dd2078c61b20b1e2aec344ce30b9d36cb1d43a",
+    "deploy/ops/lib.sh": "410fd7670007b48b1c1605adac75826c3705a9812c3ed52d61e85d26d73e4f86"
+  },
+  "prior_benchmark": "Captured snapshot only. New guards affect source interpretation and recovery; native apply helpers unchanged. Performance was not remeasured for this snapshot.",
+  "mechanical_lint_after_runtime_tests": true
+}

@@ -1,4 +1,5 @@
 import { defineConfig } from "@playwright/test"
+import { fileURLToPath } from "node:url"
 
 import { viewports } from "./src/projects"
 
@@ -11,6 +12,12 @@ const ci = Boolean(process.env.CI)
  */
 export default defineConfig({
   testDir: "tests-stack",
+  metadata: {
+    scannedCatalogPath: fileURLToPath(
+      new URL("./fixtures/product-bulk/scanned-catalog.pdf", import.meta.url)
+    ),
+    scannedNoCredentials: true,
+  },
   forbidOnly: ci,
   // No retries: a flaky cross-app flow is a bug to fix, not to hide.
   retries: 0,

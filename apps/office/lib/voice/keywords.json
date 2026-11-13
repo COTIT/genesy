@@ -1176,6 +1176,16 @@
     "nl": ["hernoemen"],
     "sw": ["badilisha", "jina", "kundi", "bidhaa"]
   },
+  "product_fields_list": {
+    "en": ["custom fields", "product fields", "field definitions", "available fields"],
+    "nl": ["productvelden", "aangepaste velden", "velddefinities", "veldenlijst"],
+    "sw": ["orodha", "sehemu maalum", "bidhaa", "uga"]
+  },
+  "product_fields_get": {
+    "en": ["custom field", "field definition", "field details"],
+    "nl": ["productveld", "aangepast veld", "velddefinitie", "velddetails"],
+    "sw": ["onyesha", "maelezo", "sehemu maalum", "bidhaa"]
+  },
   "product_variants_generate": {
     "en": ["add", "sizes"],
     "nl": ["maten", "toevoegen"],

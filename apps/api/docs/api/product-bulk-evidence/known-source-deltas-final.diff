@@ -1,0 +1,94 @@
+diff --git a/private/tmp/flow-product-fields/apps/api/src/modules/product_bulk_runs/extraction.rs b/private/tmp/flow-product-bulk/apps/api/src/modules/product_bulk_runs/extraction.rs
+index c59084313..2e8df2ac9 100644
+--- a/private/tmp/flow-product-fields/apps/api/src/modules/product_bulk_runs/extraction.rs
++++ b/private/tmp/flow-product-bulk/apps/api/src/modules/product_bulk_runs/extraction.rs
+@@ -262,6 +262,15 @@ pub async fn extract_source(
+             mapping = check_mapping(answer.mapping(), &columns, &targets)?;
+         }
+     }
++    let mut header_rows = source.cursor["header_rows"]
++        .as_object()
++        .cloned()
++        .unwrap_or_default();
++    if let Some(header) = header {
++        header_rows
++            .entry(parsed.sheet.clone().unwrap_or_default())
++            .or_insert(json!(header));
++    }
+     let mut current_columns = columns.clone();
+     let mut rows = Vec::new();
+     for row in parsed.rows {
+@@ -299,7 +308,7 @@ pub async fn extract_source(
+     Ok(ExtractionStep {
+         rows,
+         columns,
+-        cursor: json!({"sheet_index":next_sheet,"after":if changed_sheet {0}else{parsed.after},"rows_read":rows_read,"header_row":if changed_sheet{None}else{header}}),
++        cursor: json!({"sheet_index":next_sheet,"after":if changed_sheet {0}else{parsed.after},"rows_read":rows_read,"header_rows":header_rows,"header_row":if changed_sheet{None}else{header}}),
+         done: parsed.done,
+         total: parsed.total,
+         selection: None,
+
+diff --git a/private/tmp/flow-product-fields/apps/api/src/modules/product_bulk_runs/service.rs b/private/tmp/flow-product-bulk/apps/api/src/modules/product_bulk_runs/service.rs
+index efe3775bc..9c3b22b84 100644
+--- a/private/tmp/flow-product-fields/apps/api/src/modules/product_bulk_runs/service.rs
++++ b/private/tmp/flow-product-bulk/apps/api/src/modules/product_bulk_runs/service.rs
+@@ -106,7 +106,7 @@ pub async fn expire_locked(
+ }
+ pub async fn get(db: &PgPool, workspace: Uuid, id: Uuid) -> Result<Value, AppError> {
+     let mut run:Value=sqlx::query_scalar("SELECT to_jsonb(r)-'selection_cursor'-'prepare_cursor'-'retain_until' FROM product_bulk_runs r WHERE workspace_id=$1 AND id=$2").bind(workspace).bind(id).fetch_optional(db).await?.ok_or(AppError::NotFound)?;
+-    run["sources"]=Value::Array(sqlx::query_scalar("SELECT (to_jsonb(s)-'object_key'-'sha256'-'workspace_id'-'run_id'-'cursor')||jsonb_build_object('progress',CASE WHEN cursor ? 'total_pages' THEN jsonb_build_object('pages_done',least((cursor->>'total_pages')::bigint,greatest(0,(cursor->>'page')::bigint-1)),'total_pages',cursor->'total_pages') ELSE jsonb_strip_nulls(jsonb_build_object('rows_read',cursor->'rows_read','sheet_index',cursor->'sheet_index')) END) FROM product_bulk_sources s WHERE workspace_id=$1 AND run_id=$2 ORDER BY created_at,id").bind(workspace).bind(id).fetch_all(db).await?);
++    run["sources"]=Value::Array(sqlx::query_scalar("SELECT (to_jsonb(s)-'object_key'-'sha256'-'workspace_id'-'run_id'-'cursor')||jsonb_build_object('header_rows',coalesce(cursor->'header_rows','{}'::jsonb),'progress',CASE WHEN cursor ? 'total_pages' THEN jsonb_build_object('pages_done',least((cursor->>'total_pages')::bigint,greatest(0,(cursor->>'page')::bigint-1)),'total_pages',cursor->'total_pages') ELSE jsonb_strip_nulls(jsonb_build_object('rows_read',cursor->'rows_read','sheet_index',cursor->'sheet_index')) END) FROM product_bulk_sources s WHERE workspace_id=$1 AND run_id=$2 ORDER BY created_at,id").bind(workspace).bind(id).fetch_all(db).await?);
+     run["reviews"]=Value::Array(sqlx::query_scalar("SELECT to_jsonb(v)-'workspace_id'-'run_id' FROM product_bulk_reviews v WHERE workspace_id=$1 AND run_id=$2 ORDER BY created_at DESC,id DESC LIMIT 100").bind(workspace).bind(id).fetch_all(db).await?);
+     let counts:Value=sqlx::query_scalar("SELECT jsonb_build_object('total',count(*),'ready',count(*) FILTER(WHERE status='ready'),'errors',count(*) FILTER(WHERE status='error'),'applied',count(*) FILTER(WHERE status='applied'),'excluded',count(*) FILTER(WHERE NOT included),'stale',count(*) FILTER(WHERE status='stale'),'deletes',count(*) FILTER(WHERE included AND operation='delete'),'validated',count(*) FILTER(WHERE validated_revision=(SELECT revision FROM product_bulk_runs WHERE id=$2))) FROM product_bulk_rows WHERE workspace_id=$1 AND run_id=$2").bind(workspace).bind(id).fetch_one(db).await?;
+     run["progress"] = json!({"phase":run["state"],"done":counts["applied"],"total":counts["total"],"validated":counts["validated"],"applied":counts["applied"],"failed":counts["errors"].as_i64().unwrap_or(0)+counts["stale"].as_i64().unwrap_or(0),"skipped":counts["excluded"]});
+@@ -938,7 +938,7 @@ pub(super) async fn reject_duplicates(
+         coalesce((SELECT jsonb_agg(issue) FROM jsonb_array_elements(r.issues) issue
+                   WHERE issue->>'code'<>'duplicate_target'),'[]'::jsonb)
+         || '[{"code":"duplicate_target","message":"Several included rows use the same exact source key or resolve to the same product. Correct their identities or exclude conflicting rows."}]'::jsonb
+-      FROM members m WHERE r.id=m.id"#)
++      FROM members m WHERE r.id=m.id AND r.run_id=$1 AND r.validated_revision=$2 AND r.included"#)
+         .bind(run).bind(revision).bind(match_key).execute(conn).await?;
+     Ok(())
+ }
+@@ -966,7 +966,17 @@ pub(super) async fn resolve_unlocked(
+                 .get(key_name)
+                 .and_then(Value::as_str)
+                 .filter(|s| !s.trim().is_empty())
+-        });
++        })
++        .map(|s| {
++            if key_name == "id" {
++                Uuid::parse_str(s).map(|id| id.to_string()).map_err(|_| {
++                    AppError::field("target", "Use a valid product UUID as the ID matching key.")
++                })
++            } else {
++                Ok(s.to_owned())
++            }
++        })
++        .transpose()?;
+     if direct.is_none() && key.is_none() {
+         return Ok(vec![]);
+     }
+
+diff --git a/private/tmp/flow-product-fields/apps/api/src/modules/product_bulk_runs/worker.rs b/private/tmp/flow-product-bulk/apps/api/src/modules/product_bulk_runs/worker.rs
+index 8f348fb42..dbcd8a019 100644
+--- a/private/tmp/flow-product-fields/apps/api/src/modules/product_bulk_runs/worker.rs
++++ b/private/tmp/flow-product-bulk/apps/api/src/modules/product_bulk_runs/worker.rs
+@@ -784,7 +784,16 @@ async fn prepare(
+         sqlx::query("SAVEPOINT bulk_match")
+             .execute(&mut *tx)
+             .await?;
+-        let (row, mut error) = staged_row(&mut tx, run, r, &mode).await;
++        let (mut row, mut error) = staged_row(&mut tx, run, r, &mode).await;
++        if match_key == "id" {
++            for (container, field) in [(&mut row.target, "key"), (&mut row.values, "id")] {
++                if let Some(value) = container.get_mut(field) {
++                    if let Some(id) = value.as_str().and_then(|s| Uuid::parse_str(s).ok()) {
++                        *value = json!(id);
++                    }
++                }
++            }
++        }
+         let mut resolved = None;
+         let matched = async {
+             if r.get::<bool, _>("included") && row.included {

@@ -39,6 +39,12 @@ export const flowApi = (
 ): Record<string, MockReply> => ({
   "GET /me": { body: { data: { user: AMINA } } },
   "GET /me/workspaces": { body: { data: [ILUNDO] } },
+  "GET /workspace/w1/product-bulk-runs": {
+    body: { data: { runs: [], next: null } },
+  },
+  "GET /workspace/w2/product-bulk-runs": {
+    body: { data: { runs: [], next: null } },
+  },
   // F3: every signed-in screen ranks suggestions with Flow noticed; nothing noticed by default.
   "GET /workspace/w1/attention/priorities": { body: NO_ALERTS },
   "GET /workspace/w2/attention/priorities": { body: NO_ALERTS },

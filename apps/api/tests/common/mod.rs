@@ -77,6 +77,8 @@ pub fn state(pool: PgPool, mailer: Mailer) -> AppState {
             genesy_360_api::CredentialKey::from_hex(CREDENTIALS_KEY).unwrap(),
         )),
         assistant_bridge_secret: None,
+        product_bulk_enabled: true,
+        anthropic_api_key: None,
         files: Some(genesy_360_api::storage::Store::memory()),
         pdf: None,
         payments: genesy_360_api::payments::Payments::default().with_globadyme_environment(Some(

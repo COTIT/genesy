@@ -30,6 +30,7 @@ describe("Flow namespace files", () => {
           [l, "shell"],
           [l, "scenes"],
           [l, "history"],
+          [l, "productBulk"],
         ] as const
     )
   )("%s merges %s.json with the same keys as English", async (locale, name) => {

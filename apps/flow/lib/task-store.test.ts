@@ -124,6 +124,20 @@ it("an approval in flight resolves to its receipt once Office says it completed"
   expect(approvalOutcome(approved, [status("completed")])).toEqual({ status: "completed" })
 })
 
+it("a persisted unknown receipt upgrades only when its matching recovery completed", () => {
+  const unknown = { status: "unknown", message: "Check the record" }
+  expect(approvalOutcome(approved, [status("completed")], unknown)).toEqual({ status: "completed" })
+  for (const state of ["awaiting_review", "running", "unknown", "failed", "partial", "cancelled"])
+    expect(approvalOutcome(approved, [status(state)], unknown)).toBeNull()
+  expect(approvalOutcome(approved, [], unknown)).toBeNull()
+  expect(approvalOutcome(approved, [status("completed", "products_update")], unknown)).toBeNull()
+})
+
+it("recovery never replaces a verified terminal receipt", () => {
+  for (const state of ["completed", "partial", "failed", "cancelled"])
+    expect(approvalOutcome(approved, [status("completed")], { status: state, data: { receipt: "kept" } })).toBeNull()
+})
+
 it("running, unknown or failed after a reload: not confirmed yet, never 'not done'", () => {
   for (const s of ["running", "unknown", "failed", "partial"])
     expect(approvalOutcome(approved, [status(s)])).toEqual({ status: "unknown" })

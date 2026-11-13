@@ -27,6 +27,17 @@ const picture = (id: string, view: ResultView, operation?: string): TranscriptRo
 })
 
 describe("scene context", () => {
+  it("identifies the product migration being discussed without sending source values", () => {
+    const id = "01950000-0000-7000-8000-000000000001"
+    expect(sceneContext({ pathname: `/imports/products/${id}` })).toEqual({
+      active_scene: "product_import",
+      selected_record_type: "product_bulk_run",
+      selected_record_id: id,
+    })
+    expect(sceneContext({ pathname: "/imports/products/fields" })).toEqual({
+      active_scene: "imports",
+    })
+  })
   it("names the scene from the path and carries ids only", () => {
     expect(sceneContext({ pathname: "/" })).toEqual({ active_scene: "home" })
     expect(sceneContext({ pathname: "/storefront" })).toEqual({

@@ -50,6 +50,17 @@ export function sceneContext({
   const context: SceneContext = {
     active_scene: (parts[0] === "scenes" ? parts[1] : parts[0]) || "home",
   }
+  if (
+    parts[0] === "imports" &&
+    parts[1] === "products" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      parts[2] ?? ""
+    )
+  ) {
+    context.active_scene = "product_import"
+    context.selected_record_type = "product_bulk_run"
+    context.selected_record_id = parts[2]
+  }
   if (selected?.ids.length) {
     context.selected_record_type = selected.type
     if (selected.ids.length === 1) context.selected_record_id = selected.ids[0]

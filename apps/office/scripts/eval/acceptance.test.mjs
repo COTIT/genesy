@@ -14,7 +14,7 @@ import {
 test("API authentication fixture includes every eligible catalog ID without non-bearer substitutions", async () => {
   const { catalog } = await loadInputs()
   const fixture = JSON.parse(await readFile(new URL("../../../../apps/api/tests/fixtures/assistant_eligible_operations.json", import.meta.url), "utf8"))
-  assert.equal(fixture.eligibleOperationIds.length, 428)
+  assert.equal(fixture.eligibleOperationIds.length, 430)
   assert.deepEqual(fixture.eligibleOperationIds,
     catalog.filter(operation => ["execute", "secure_ui"].includes(operation.disposition)).map(operation => operation.id).sort())
   assert.deepEqual(fixture.excludedDispositions, ["external", "identity", "internal"])
@@ -91,7 +91,7 @@ test("API restricted-role fixture pins every permission-protected eligible ID", 
   const { catalog } = await loadInputs()
   const fixture = JSON.parse(await readFile(new URL("../../../../apps/api/tests/fixtures/assistant_restricted_operations.json", import.meta.url), "utf8"))
   assert.equal(fixture.scope, "active_member_without_grants_only")
-  assert.equal(fixture.restrictedOperationIds.length, 282)
+  assert.equal(fixture.restrictedOperationIds.length, 284)
   assert.deepEqual(fixture.restrictedOperationIds,
     catalog.filter(operation => ["execute", "secure_ui"].includes(operation.disposition) && [...(operation.authorization.allOf ?? []), ...(operation.authorization.anyOf ?? [])].length).map(operation => operation.id).sort())
 })
@@ -100,8 +100,8 @@ test("API collection-tenant fixture has no unresolved target and leaves no colle
   const { catalog, reviews } = await loadInputs()
   const fixture = JSON.parse(await readFile(new URL("../../../../apps/api/tests/fixtures/assistant_collection_tenant_operations.json", import.meta.url), "utf8"))
   assert.equal(fixture.scope, "known_live_workspace_collection_boundary_only")
-  assert.equal(fixture.collectionOperationIds.length, 91)
-  assert.equal(new Set(fixture.collectionOperationIds).size, 91)
+  assert.equal(fixture.collectionOperationIds.length, 92)
+  assert.equal(new Set(fixture.collectionOperationIds).size, 92)
   const isCollection = operation => ["execute", "secure_ui"].includes(operation.disposition) && operation.path.includes("{workspace}") && [...operation.path.matchAll(/\{([^}]+)\}/g)].every(match => match[1] === "workspace")
   for (const id of fixture.collectionOperationIds) {
     const operation = catalog.find(operation => operation.id === id)

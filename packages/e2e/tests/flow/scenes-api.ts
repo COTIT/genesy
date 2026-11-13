@@ -374,6 +374,9 @@ export function sceneWorld(
             meta: { current_page: 1, last_page: 1, per_page: 10, total: 2 },
           }
     )
+    .on("GET", `${base}/product-bulk-runs`, () => ({
+      data: { runs: [], next: null },
+    }))
     .on("GET", `${base}/scheduled-reports`, () => ({ data: [] }))
     .on("GET", `${base}/storefront/pages/home`, () => NO_DESIGN)
     .on("GET", `${base}/storefront/pages/home/revisions`, () => NO_REVISIONS)
@@ -448,6 +451,9 @@ export const sceneTable = (ws = "w1"): Record<string, MockReply> => ({
         currencies: [],
       },
     },
+  },
+  [`GET /workspace/${ws}/product-bulk-runs`]: {
+    body: { data: { runs: [], next: null } },
   },
   [`GET /workspace/${ws}/scheduled-reports`]: { body: { data: [] } },
   [`GET /workspace/${ws}/storefront/pages/home`]: { body: NO_DESIGN },

@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "pdf": "seven-page-raster-catalog.pdf",
+  "pdf_sha256": "968b22f7a56235ded1c822f5a5cfbdaea1991e67ce63fec0bc4e1ac326e3255d",
+  "product_count": 7,
+  "field_types": {
+    "name": "exact string",
+    "barcode": "exact string",
+    "price": "exact decimal string",
+    "description": "string; whitespace normalization only"
+  },
+  "normalization": {
+    "description": "Collapse whitespace runs to one ASCII space and trim. Preserve all other characters, words, case, and punctuation.",
+    "name": "none",
+    "barcode": "none; preserve all leading zeros",
+    "price": "none; explicit net EUR decimal strings"
+  },
+  "records": [
+    {
+      "page": 1,
+      "row": 1,
+      "name": "Scan Rice",
+      "barcode": "0000000000101",
+      "price": "1.25",
+      "description": "White long grain rice in a sealed bag."
+    },
+    {
+      "page": 2,
+      "row": 1,
+      "name": "Scan Beans",
+      "barcode": "0000000000102",
+      "price": "2.50",
+      "description": "Red kidney beans packed without added salt."
+    },
+    {
+      "page": 3,
+      "row": 1,
+      "name": "Scan Oats",
+      "barcode": "0000000000103",
+      "price": "3.75",
+      "description": "Rolled oats for breakfast and baking."
+    },
+    {
+      "page": 4,
+      "row": 1,
+      "name": "Scan Cocoa",
+      "barcode": "0000000000104",
+      "price": "4.20",
+      "description": "Unsweetened cocoa powder in a resealable pouch."
+    },
+    {
+      "page": 5,
+      "row": 1,
+      "name": "Scan Coffee",
+      "barcode": "0000000000105",
+      "price": "5.60",
+      "description": "Roasted coffee beans packed in a sealed bag. Keep in a cool dry place away from sunlight.",
+      "continuations": [
+        {
+          "page": 6,
+          "row": 1
+        }
+      ]
+    },
+    {
+      "page": 6,
+      "row": 2,
+      "name": "Scan Tea",
+      "barcode": "0000000000106",
+      "price": "6.80",
+      "description": "Loose leaf tea in a paper carton."
+    },
+    {
+      "page": 7,
+      "row": 1,
+      "name": "Scan Lentils",
+      "barcode": "0000000000107",
+      "price": "7.90",
+      "description": "Green lentils cleaned and sorted for cooking."
+    }
+  ],
+  "page_variations": [
+    {
+      "page": 1,
+      "rotation_degrees": 0.0,
+      "background": 255,
+      "ink": 25
+    },
+    {
+      "page": 2,
+      "rotation_degrees": -0.35,
+      "background": 250,
+      "ink": 35
+    },
+    {
+      "page": 3,
+      "rotation_degrees": 0.45,
+      "background": 247,
+      "ink": 45
+    },
+    {
+      "page": 4,
+      "rotation_degrees": -0.2,
+      "background": 253,
+      "ink": 35
+    },
+    {
+      "page": 5,
+      "rotation_degrees": 0.3,
+      "background": 249,
+      "ink": 30
+    },
+    {
+      "page": 6,
+      "rotation_degrees": -0.45,
+      "background": 248,
+      "ink": 40
+    },
+    {
+      "page": 7,
+      "rotation_degrees": 0.2,
+      "background": 252,
+      "ink": 30
+    }
+  ],
+  "expected_primary_chunks": [
+    {
+      "primary_pages": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "following_context_pages": [
+        6
+      ],
+      "expected_barcodes": [
+        "0000000000101",
+        "0000000000102",
+        "0000000000103",
+        "0000000000104",
+        "0000000000105"
+      ],
+      "must_not_emit_context_product": "0000000000106",
+      "note": "Coffee is owned by page 5 and must include its page 6 continuation; Tea is visible on context page 6 but belongs to the next primary chunk."
+    },
+    {
+      "primary_pages": [
+        6,
+        7
+      ],
+      "preceding_context_pages": [
+        5
+      ],
+      "expected_barcodes": [
+        "0000000000106",
+        "0000000000107"
+      ],
+      "must_not_emit_previous_product": "0000000000105",
+      "note": "Do not emit Coffee again from its continuation; emit Tea and Lentils exactly once."
+    }
+  ],
+  "expected_unresolved_fields": [],
+  "provenance": "Page numbers are one-based; row is body row within that page table. Page 6 row 1 is a continuation, not an eighth product."
+}

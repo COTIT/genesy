@@ -209,6 +209,17 @@ describe("voice trigger words", () => {
     expect(top(query)).toContain(id)
   })
 
+  it.each([
+    ["list product custom field definitions", "product_fields_list"],
+    ["toon productvelden en velddefinities", "product_fields_list"],
+    ["orodha ya sehemu maalum za bidhaa", "product_fields_list"],
+    ["show custom field definition details", "product_fields_get"],
+    ["toon details van dit productveld", "product_fields_get"],
+    ["onyesha maelezo ya sehemu maalum ya bidhaa", "product_fields_get"],
+  ])("finds the product field operation for %j", (query, id) => {
+    expect(top(query)).toContain(id)
+  })
+
   // A wrong delivery is a correction request, not a new purchase.
   it.each([
     "correct Gift's delivery to 40 kg",

@@ -56,6 +56,8 @@ pub(crate) fn test_state(pool: sqlx::PgPool) -> crate::AppState {
         body_deadline: std::time::Duration::from_secs(60),
         credentials: None,
         assistant_bridge_secret: None,
+        product_bulk_enabled: true,
+        anthropic_api_key: None,
         files: None,
         pdf: None,
         payments: crate::payments::Payments::default()

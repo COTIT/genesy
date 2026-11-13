@@ -67,6 +67,7 @@
     "payments_gateway_list",
     "price_corrections_create",
     "product_brands_create",
+    "product_fields_list",
     "products_create",
     "products_search",
     "products_top_sellers",

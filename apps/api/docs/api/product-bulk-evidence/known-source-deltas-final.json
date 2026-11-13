@@ -1,0 +1,17 @@
+[
+  {
+    "path": "src/modules/product_bulk_runs/extraction.rs",
+    "frozen_sha256": "60b013826c3436831f3ee3461f3d4e6022d3c812e09a848660a6db0f4f7d0f0a",
+    "current_parent_sha256": "ef5f9d8f0ae032d20d87f698d68f73dca3a5c9b726d5998fe35c00c8f6ee7216"
+  },
+  {
+    "path": "src/modules/product_bulk_runs/service.rs",
+    "frozen_sha256": "b138952537db11aca481f2d76a01ff685ac38138eaec40d56c002c821b590bb6",
+    "current_parent_sha256": "98aac0246031286df58a2d3ab704a15c44f355f0565fa6f7e58ae8b71647e2a3"
+  },
+  {
+    "path": "src/modules/product_bulk_runs/worker.rs",
+    "frozen_sha256": "11311d705a6fc08d54e18a70215ffe9339e9849e3a6d9645590111400ca58700",
+    "current_parent_sha256": "ae51fcc99da5a14f3ec69d2b842c2b36bc7e802a7902d838fdbe6a62177c9e37"
+  }
+]

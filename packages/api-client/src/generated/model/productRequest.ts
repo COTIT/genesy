@@ -5,6 +5,7 @@
  * One backend for the Genesy shop, office, field and till apps. Every private route needs `Authorization: Bearer <token>`.
  * OpenAPI spec version: 0.1.0
  */
+import type { ProductRequestCustomFields } from './productRequestCustomFields';
 import type { ProductRequestCustomSectionFormsItem } from './productRequestCustomSectionFormsItem';
 import type { ProductRequestCustomSectionsItem } from './productRequestCustomSectionsItem';
 import type { ProductRequestDimensions } from './productRequestDimensions';
@@ -34,6 +35,11 @@ export interface ProductRequest {
   country_of_origin?: string | null;
   /** @nullable */
   currency_id?: string | null;
+  /**
+     * Field UUID to typed value. Absent keeps; null clears only nullable fields.
+     * @nullable
+     */
+  custom_fields?: ProductRequestCustomFields;
   /**
      * Same rule as `custom_sections`.
      * @nullable

@@ -1,0 +1,286 @@
+{
+  "status": "passed_validation_profile",
+  "source_worktree": "/private/tmp/flow-product-fields",
+  "approved_source": "/private/tmp/flow-product-bulk/apps/api",
+  "source_manifest_sha256": "e85b0ba62cc33631e9ac6d993ee0efddb676b7d2cc09e5d375eb7b66f1822916",
+  "image": "rust:1.99.0-slim-trixie@sha256:2752b332db73fdbb7dc576f06c82ed1f312005784ef913d7e04a28f5f55dc581",
+  "rustc": "1.99.0 (b940084d7 2026-09-28)",
+  "architecture": "linux/arm64",
+  "build_attempts": [
+    {
+      "container": "genesy-product-bulk-linux-build",
+      "memory_bytes": 3221225472,
+      "cpu": 2,
+      "cargo_jobs": 2,
+      "exit_code": 101,
+      "oom_killed": true
+    },
+    {
+      "container": "genesy-product-bulk-linux-build-5g",
+      "memory_bytes": 5368709120,
+      "cpu": 2,
+      "cargo_jobs": 1,
+      "status": "failed",
+      "exit_code": 101,
+      "oom_killed": true
+    },
+    {
+      "container": "genesy-product-bulk-linux-build-6g",
+      "memory_bytes": 6442450944,
+      "cpu": 2,
+      "cargo_jobs": 1,
+      "status": "stopped_on_parent_direction",
+      "reason": "Avoid Docker VM memory pressure"
+    },
+    {
+      "container": "genesy-product-bulk-linux-build-opt1",
+      "memory_bytes": 5368709120,
+      "cpu": 2,
+      "cargo_jobs": 1,
+      "status": "passed_baseline_only",
+      "profile": "release cfg; root package opt-level=1, codegen-units=256; dependencies normal release"
+    }
+  ],
+  "runtime_limits": {
+    "memory_bytes": 1073741824,
+    "memory_swap_bytes": 1073741824,
+    "cpu": 1.5,
+    "uid": 65532,
+    "gid": 65532,
+    "read_only_rootfs": true,
+    "cap_drop": "ALL",
+    "no_new_privileges": true
+  },
+  "database": {
+    "container": "genesy-product-bulk-tests",
+    "network": "container:genesy-product-bulk-tests",
+    "memory_bytes": 1073741824,
+    "cpu": 2,
+    "data_scope": "disposable sqlx test databases"
+  },
+  "parser_tests": {
+    "status": "passed",
+    "passed": 11,
+    "failed": 0,
+    "ignored": 1,
+    "ignored_reason": "Debug-hook child test not applicable to releasecfg; exact helper recovery proven separately",
+    "container": "genesy-product-bulk-linux-parser-final",
+    "duration_seconds": 0.03
+  },
+  "parser_child_limits": {
+    "status": "passed",
+    "container": "genesy-product-bulk-linux-parser-final",
+    "uid": 65532,
+    "read_only_rootfs": true,
+    "address_space_soft_bytes": 268435456,
+    "address_space_hard_bytes": 268435456,
+    "cpu_soft_seconds": 30,
+    "cpu_hard_seconds": 30,
+    "core_soft_bytes": 0,
+    "core_hard_bytes": 0,
+    "valid_csv_rows": 2
+  },
+  "memory_failure": {
+    "child_allocation_status": "passed",
+    "child_exit_code": 134,
+    "stderr": "memory allocation of 1 bytes failed",
+    "parent_survival_status": "passed",
+    "fixture": {
+      "source_bytes": 207790,
+      "shared_strings": 5000000,
+      "inflated_shared_strings_bytes": 80000073,
+      "sha256": "70d488ec540abe0b3b0d641116f917ecce8453583bd74b6c918b880499635b92",
+      "inflated_total_bytes": 85001720
+    },
+    "subsequent_valid_rows": 2,
+    "subsequent_valid_ms": 2,
+    "container_memory_peak_bytes": 263827456,
+    "cgroup_oom_events": 0,
+    "cgroup_oom_kills": 0
+  },
+  "benchmark_50000": {
+    "status": "passed",
+    "snapshot_sha256": "e85b0ba62cc33631e9ac6d993ee0efddb676b7d2cc09e5d375eb7b66f1822916",
+    "container": "genesy-product-bulk-linux-50000-final",
+    "native_rows": 50000,
+    "receipts": 50000,
+    "creates": 16667,
+    "updates": 16667,
+    "deletes": 16666,
+    "errors": 0,
+    "stale": 0,
+    "restarted": true,
+    "restart_scope": "lost preparation lease rejected then reclaimed; no OS process kill",
+    "stage_seconds": 53.611,
+    "prepare_seconds": 226.294,
+    "apply_seconds": 266.487,
+    "chunks": 4000,
+    "chunk_ms_p50": 108.668,
+    "chunk_ms_p95": 222.744,
+    "chunk_ms_max": 839.439,
+    "foreground_ms_p95": 71.941,
+    "pool_size": 5,
+    "pool_idle": 4,
+    "total_test_seconds": 666.74,
+    "wall_seconds": 667,
+    "memory_peak_bytes": 155918336,
+    "cgroup_oom": 0,
+    "cgroup_oom_kill": 0,
+    "container_enforcement": {
+      "user": "65532:65532",
+      "read_only": true,
+      "memory_bytes": 1073741824,
+      "memory_swap_bytes": 1073741824,
+      "nano_cpus": 1500000000,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges"
+      ],
+      "exit_code": 0,
+      "oom_killed": false
+    },
+    "log": "benchmark-final.log",
+    "assertions": {
+      "independent_variant_prices_unchanged": 16667,
+      "inheriting_variant_prices_updated": 33334,
+      "positive_stock_rows_preserved": 16667,
+      "positive_stock_amount": "5",
+      "delete_targets_stock": "0",
+      "custom_number_field_in_rows": true
+    }
+  },
+  "validation_only_files": [
+    "tests/linux_validation.rs",
+    "src/bin/parser_validation_probe.rs"
+  ],
+  "limitations": [
+    "Full opt-level3 Linux API compilation exceeded 3GiB and 5GiB build caps; validation-only root crate uses opt-level1/codegen-units256 while retaining release cfg. No claim that full production opt3 build passed.",
+    "Dedicated harness imports exact parser and native 50k benchmark functions; fixture strengthened only with independent variants, positive update stock, and preservation assertions. Not a full API suite.",
+    "Foreground timing uses in-process native HTTP handlers, not browser or TCP latency.",
+    "Separate Postgres container; API+worker process has the 1GiB/1.5CPU cap.",
+    "Linux arm64 under Docker Desktop, not production VPS hardware.",
+    "No live AI/provider calls, deployment, or production access."
+  ],
+  "production_opt3_build_passed": false,
+  "old_snapshot_eof_probe": {
+    "status": "stopped",
+    "reason": "Confirmed pending child stdin handle prevents EOF; parent parser fix will be included before rerun"
+  },
+  "artifacts": {
+    "parser_validation_probe": "16e477b17f670ba45776c08f5fb4d0e8861a547590b952db7a348f3e24beeb84",
+    "genesy-360-api": "bbb002519263e51103c66a71751397dc4ce22acba1777b61cf45c5113edfe63a",
+    "linux_validation": "840db46e14b4c4aeaf6f5e2d2ace6cf5d600d937df4adf49f4b2637dc30aac23"
+  },
+  "baseline_50000": {
+    "status": "passed_baseline_only",
+    "scope_note": "Predates final deletion impact/category locking safety fixes; not final-core certification",
+    "snapshot_sha256": "b0797b4bfbfbfd5b4e4c4e06f9df07c8c7bc9959a1ef00e347dc582363a3e7ab",
+    "container": "genesy-product-bulk-linux-50000",
+    "native_rows": 50000,
+    "receipts": 50000,
+    "restarted": true,
+    "stage_seconds": 53.8,
+    "prepare_seconds": 123.441,
+    "apply_seconds": 186.694,
+    "total_test_seconds": 462.39,
+    "wall_seconds": 462,
+    "chunks": 4000,
+    "chunk_ms_p50": 73.462,
+    "chunk_ms_p95": 111.637,
+    "chunk_ms_max": 1911.156,
+    "foreground_ms_p95": 53.425,
+    "pool_size": 5,
+    "pool_idle": 4,
+    "memory_peak_bytes": 153284608,
+    "cgroup_oom": 0,
+    "cgroup_oom_kill": 0,
+    "container_enforcement": {
+      "user": "65532:65532",
+      "read_only": true,
+      "memory_bytes": 1073741824,
+      "memory_swap_bytes": 1073741824,
+      "nano_cpus": 1500000000,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges"
+      ],
+      "exit_code": 0,
+      "oom_killed": false
+    },
+    "log": "benchmark-baseline.log",
+    "fixture": {
+      "mixed_create": 16667,
+      "mixed_update": 16667,
+      "mixed_delete": 16666,
+      "initial_inheriting_variants_per_product": 2,
+      "initial_noninheriting_variants_per_product": 0,
+      "initial_stock_rows_per_product": 1,
+      "initial_stock_amount": "0",
+      "custom_fields": 1
+    }
+  },
+  "final_source_manifest_sha256": "e85b0ba62cc33631e9ac6d993ee0efddb676b7d2cc09e5d375eb7b66f1822916",
+  "final_approved_source": "/private/tmp/flow-product-bulk/apps/api",
+  "final_fixture_modifications": {
+    "noninheriting_variant_per_existing_product": 1,
+    "positive_stock_for_update_targets": "5",
+    "delete_stock": "0",
+    "native_cases": 50000,
+    "diff": "benchmark-strengthening.diff"
+  },
+  "final_build_attempt": {
+    "container": "genesy-product-bulk-linux-build-final-v2",
+    "status": "passed",
+    "elapsed_seconds": 622,
+    "profile": "release cfg; root package opt-level=1, codegen-units=256; dependencies normal release",
+    "memory_bytes": 5368709120,
+    "cpu": 2,
+    "cargo_jobs": 1
+  },
+  "known_post_freeze_source_deltas": {
+    "files": [
+      {
+        "path": "src/modules/product_bulk_runs/extraction.rs",
+        "frozen_sha256": "60b013826c3436831f3ee3461f3d4e6022d3c812e09a848660a6db0f4f7d0f0a",
+        "current_parent_sha256": "ef5f9d8f0ae032d20d87f698d68f73dca3a5c9b726d5998fe35c00c8f6ee7216"
+      },
+      {
+        "path": "src/modules/product_bulk_runs/service.rs",
+        "frozen_sha256": "b138952537db11aca481f2d76a01ff685ac38138eaec40d56c002c821b590bb6",
+        "current_parent_sha256": "98aac0246031286df58a2d3ab704a15c44f355f0565fa6f7e58ae8b71647e2a3"
+      },
+      {
+        "path": "src/modules/product_bulk_runs/worker.rs",
+        "frozen_sha256": "11311d705a6fc08d54e18a70215ffe9339e9849e3a6d9645590111400ca58700",
+        "current_parent_sha256": "ae51fcc99da5a14f3ec69d2b842c2b36bc7e802a7902d838fdbe6a62177c9e37"
+      }
+    ],
+    "diff": "known-source-deltas-final.diff",
+    "scope": "UUID _key canonicalization and explicit duplicate UPDATE scoping; extraction/header_rows source metadata. Native apply unchanged; 50k uses direct product_id and no sources."
+  },
+  "restart_verification": {
+    "scope": "simulated lease loss during preparation after two chunks; old worker rejects lost ownership and subsequent claim resumes",
+    "os_process_crash_test": false
+  },
+  "parser_recovery_scope": "Actual released API child limits/allocation failure; exact parser::read helper runs in dedicated release probe and remains alive for subsequent valid request. Full HTTP server survival not exercised here.",
+  "logs": {
+    "build": "build-final.log",
+    "parser": "parser-final.log",
+    "benchmark": "benchmark-final.log"
+  },
+  "source_manifest_file": "source-manifest-final.json",
+  "source_manifest_hash_file": "source-manifest-final.sha256",
+  "historical_approved_overlay": {
+    "source": "/private/tmp/flow-product-bulk-api/apps/api",
+    "files": [
+      "src/modules/product_bulk_runs/service.rs",
+      "src/modules/product_bulk_runs/worker.rs"
+    ]
+  },
+  "passed_scope": "Frozen final native mutation/locking/delete-impact/duplicate-audit snapshot with direct product_id 50k workload and separately exercised final parser. Later UUID-key and header metadata deltas recorded; current parent HEAD not claimed identical.",
+  "optional_512m_test_run": false
+}

@@ -10,6 +10,7 @@ const NAMESPACES = [
   "task",
   "studio",
   "history",
+  "product-bulk",
 ] as const // F2 scenes, F3 discovery, F4 task, F5 studio
 
 /** Flow's own texts plus the shared voice assistant texts it hosts; common/auth come from @genesy/i18n. */

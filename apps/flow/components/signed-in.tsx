@@ -6,7 +6,10 @@ import { useQueryClient } from "@tanstack/react-query"
 
 import { useSession } from "@genesy/api-client/auth"
 import { sessionStore } from "@genesy/api-client/session"
-import { GenesyVoiceProvider } from "@genesy/voice/components/provider"
+import {
+  GenesyVoiceProvider,
+  useVoice,
+} from "@genesy/voice/components/provider"
 import { HistoryContinuity } from "@/components/history-continuity"
 import { Shell } from "@/components/shell"
 import { useDraftKeeper } from "@/lib/draft-keeper"
@@ -58,7 +61,26 @@ export function SignedIn({
       historyEnabled
     >
       <HistoryContinuity />
+      <BulkOutcomeRefresh />
       <Shell>{children}</Shell>
     </GenesyVoiceProvider>
   )
+}
+
+/** A voice-created run appears immediately even when the idle run list stopped polling. */
+function BulkOutcomeRefresh() {
+  const outcome = useVoice().outcome
+  const client = useQueryClient()
+  React.useEffect(() => {
+    const data = outcome?.data
+    if (
+      data &&
+      typeof data === "object" &&
+      "flow_path" in data &&
+      typeof data.flow_path === "string" &&
+      data.flow_path.startsWith("/imports/products/")
+    )
+      void client.invalidateQueries({ queryKey: ["product-bulk"] })
+  }, [outcome, client])
+  return null
 }

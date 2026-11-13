@@ -12,8 +12,15 @@ use genesy_360_api::{
 use sqlx::postgres::PgConnectOptions;
 use tracing_subscriber::EnvFilter;
 
+fn main() {
+    if std::env::args().nth(1).as_deref() == Some("parse-product-source") {
+        std::process::exit(genesy_360_api::product_bulk_runs::parser::child_main());
+    }
+    serve();
+}
+
 #[tokio::main]
-async fn main() {
+async fn serve() {
     // `genesy-360-api healthcheck`: compose healthcheck for the shell-less image. Needs only
     // BIND_ADDR's port, not the full config (secrets, DB), and exits right away.
     if std::env::args().nth(1).as_deref() == Some("healthcheck") {
@@ -173,6 +180,8 @@ async fn main() {
         body_deadline: Duration::from_secs(config.request_body_deadline_secs),
         credentials,
         assistant_bridge_secret: config.assistant_bridge_secret.map(std::sync::Arc::new),
+        product_bulk_enabled: config.product_bulk_enabled,
+        anthropic_api_key: config.anthropic_api_key.map(std::sync::Arc::new),
         files,
         pdf,
         payments: payments.clone(),

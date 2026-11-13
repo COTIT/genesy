@@ -1,0 +1,10 @@
+# Optional alongside the existing uploads overlay; keep admission off until the verification gates pass.
+services:
+  api:
+    environment:
+      PRODUCT_BULK_ENABLED: ${PRODUCT_BULK_ENABLED:-false}
+      ANTHROPIC_API_KEY_FILE: /run/secrets/anthropic_api_key
+    secrets: [anthropic_api_key]
+secrets:
+  anthropic_api_key:
+    file: ${SECRETS_DIR:-./secrets}/anthropic_api_key

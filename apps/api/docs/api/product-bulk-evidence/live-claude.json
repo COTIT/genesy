@@ -1,0 +1,447 @@
+{
+  "date": "2026-11-14",
+  "synthetic_only": true,
+  "model": "claude-sonnet-5-5",
+  "aggregate_cap_usd": "3.00",
+  "actual_usd": "0.110652",
+  "pending_reserved_usd": "0",
+  "settled_calls": 5,
+  "seven_page_records_exact": 7,
+  "seven_page_records_expected": 7,
+  "field_comparison": "Exact name/barcode/price; description whitespace normalization only. Exact primary page and body row.",
+  "cross_page_continuation": "page5 Coffee includes page6 continuation exactly once; page6 Tea begins row2; no duplicate context records.",
+  "ambiguity_source": "Single-page Code/Price fixture returned explicit semantic ambiguity and no staged rows after3boundedcalls.",
+  "currency_blocker": "EUR price source mapped to price without currency_id in USD workspace. Admission remains off pending semantic safeguard and regression.",
+  "source_sha256": "968b22f7a56235ded1c822f5a5cfbdaea1991e67ce63fec0bc4e1ac326e3255d",
+  "results": {
+    "run": [
+      {
+        "state": "needs_input",
+        "row_count": 7,
+        "issues": [],
+        "mapping": {}
+      }
+    ],
+    "sources": [
+      {
+        "id": "01a1d671-e23f-7562-962c-82de09a56538",
+        "name": "scanned-catalog.pdf",
+        "state": "error",
+        "cursor": {},
+        "columns": {},
+        "suggested_mapping": {},
+        "issues": [
+          {
+            "code": "source_unreadable",
+            "message": "AI extraction was incomplete. Confirm the meaning of 'Code' (barcode, ean13, reference or another identifier) and whether 'Price' is net (price) or gross (gross_price) of VAT. The page states prices are in EUR, but no VAT treatment is given, so both columns are left unmapped. No VAT group is stated either."
+          }
+        ]
+      },
+      {
+        "id": "01a1d671-e25c-7084-acb8-3b1d3024266c",
+        "name": "seven-page-raster-catalog.pdf",
+        "state": "done",
+        "cursor": {
+          "page": 8,
+          "total_pages": 7
+        },
+        "columns": {
+          "": [
+            "Name",
+            "Barcode",
+            "Net price EUR",
+            "Description"
+          ]
+        },
+        "suggested_mapping": {
+          "": {
+            "Name": "name",
+            "Barcode": "barcode",
+            "Description": "description",
+            "Net price EUR": "price"
+          }
+        },
+        "issues": []
+      }
+    ],
+    "rows": [
+      {
+        "ordinal": 1,
+        "source_id": "01a1d671-e25c-7084-acb8-3b1d3024266c",
+        "page": 1,
+        "line": 1,
+        "raw": {
+          "line": 1,
+          "page": 1,
+          "cells": [
+            "Scan Rice",
+            "0000000000101",
+            "1.25",
+            "White long grain rice in a sealed bag."
+          ],
+          "sheet": null,
+          "columns": [
+            "Name",
+            "Barcode",
+            "Net price EUR",
+            "Description"
+          ],
+          "source_id": "01a1d671-e25c-7084-acb8-3b1d3024266c",
+          "formula_columns": [],
+          "header_candidate": false
+        },
+        "provenance": {},
+        "values": {
+          "name": "Scan Rice",
+          "price": "1.25",
+          "barcode": "0000000000101",
+          "description": "White long grain rice in a sealed bag."
+        },
+        "status": "ready",
+        "issues": []
+      },
+      {
+        "ordinal": 2,
+        "source_id": "01a1d671-e25c-7084-acb8-3b1d3024266c",
+        "page": 2,
+        "line": 1,
+        "raw": {
+          "line": 1,
+          "page": 2,
+          "cells": [
+            "Scan Beans",
+            "0000000000102",
+            "2.50",
+            "Red kidney beans packed without added salt."
+          ],
+          "sheet": null,
+          "columns": [
+            "Name",
+            "Barcode",
+            "Net price EUR",
+            "Description"
+          ],
+          "source_id": "01a1d671-e25c-7084-acb8-3b1d3024266c",
+          "formula_columns": [],
+          "header_candidate": false
+        },
+        "provenance": {},
+        "values": {
+          "name": "Scan Beans",
+          "price": "2.50",
+          "barcode": "0000000000102",
+          "description": "Red kidney beans packed without added salt."
+        },
+        "status": "ready",
+        "issues": []
+      },
+      {
+        "ordinal": 3,
+        "source_id": "01a1d671-e25c-7084-acb8-3b1d3024266c",
+        "page": 3,
+        "line": 1,
+        "raw": {
+          "line": 1,
+          "page": 3,
+          "cells": [
+            "Scan Oats",
+            "0000000000103",
+            "3.75",
+            "Rolled oats for breakfast and baking."
+          ],
+          "sheet": null,
+          "columns": [
+            "Name",
+            "Barcode",
+            "Net price EUR",
+            "Description"
+          ],
+          "source_id": "01a1d671-e25c-7084-acb8-3b1d3024266c",
+          "formula_columns": [],
+          "header_candidate": false
+        },
+        "provenance": {},
+        "values": {
+          "name": "Scan Oats",
+          "price": "3.75",
+          "barcode": "0000000000103",
+          "description": "Rolled oats for breakfast and baking."
+        },
+        "status": "ready",
+        "issues": []
+      },
+      {
+        "ordinal": 4,
+        "source_id": "01a1d671-e25c-7084-acb8-3b1d3024266c",
+        "page": 4,
+        "line": 1,
+        "raw": {
+          "line": 1,
+          "page": 4,
+          "cells": [
+            "Scan Cocoa",
+            "0000000000104",
+            "4.20",
+            "Unsweetened cocoa powder in a resealable pouch."
+          ],
+          "sheet": null,
+          "columns": [
+            "Name",
+            "Barcode",
+            "Net price EUR",
+            "Description"
+          ],
+          "source_id": "01a1d671-e25c-7084-acb8-3b1d3024266c",
+          "formula_columns": [],
+          "header_candidate": false
+        },
+        "provenance": {},
+        "values": {
+          "name": "Scan Cocoa",
+          "price": "4.20",
+          "barcode": "0000000000104",
+          "description": "Unsweetened cocoa powder in a resealable pouch."
+        },
+        "status": "ready",
+        "issues": []
+      },
+      {
+        "ordinal": 5,
+        "source_id": "01a1d671-e25c-7084-acb8-3b1d3024266c",
+        "page": 5,
+        "line": 1,
+        "raw": {
+          "line": 1,
+          "page": 5,
+          "cells": [
+            "Scan Coffee",
+            "0000000000105",
+            "5.60",
+            "Roasted coffee beans packed in a sealed bag. Keep in a cool dry place away from sunlight."
+          ],
+          "sheet": null,
+          "columns": [
+            "Name",
+            "Barcode",
+            "Net price EUR",
+            "Description"
+          ],
+          "source_id": "01a1d671-e25c-7084-acb8-3b1d3024266c",
+          "formula_columns": [],
+          "header_candidate": false
+        },
+        "provenance": {},
+        "values": {
+          "name": "Scan Coffee",
+          "price": "5.60",
+          "barcode": "0000000000105",
+          "description": "Roasted coffee beans packed in a sealed bag. Keep in a cool dry place away from sunlight."
+        },
+        "status": "ready",
+        "issues": []
+      },
+      {
+        "ordinal": 6,
+        "source_id": "01a1d671-e25c-7084-acb8-3b1d3024266c",
+        "page": 6,
+        "line": 2,
+        "raw": {
+          "line": 2,
+          "page": 6,
+          "cells": [
+            "Scan Tea",
+            "0000000000106",
+            "6.80",
+            "Loose leaf tea in a paper carton."
+          ],
+          "sheet": null,
+          "columns": [
+            "Name",
+            "Barcode",
+            "Net price EUR",
+            "Description"
+          ],
+          "source_id": "01a1d671-e25c-7084-acb8-3b1d3024266c",
+          "formula_columns": [],
+          "header_candidate": false
+        },
+        "provenance": {},
+        "values": {
+          "name": "Scan Tea",
+          "price": "6.80",
+          "barcode": "0000000000106",
+          "description": "Loose leaf tea in a paper carton."
+        },
+        "status": "ready",
+        "issues": []
+      },
+      {
+        "ordinal": 7,
+        "source_id": "01a1d671-e25c-7084-acb8-3b1d3024266c",
+        "page": 7,
+        "line": 1,
+        "raw": {
+          "line": 1,
+          "page": 7,
+          "cells": [
+            "Scan Lentils",
+            "0000000000107",
+            "7.90",
+            "Green lentils cleaned and sorted for cooking."
+          ],
+          "sheet": null,
+          "columns": [
+            "Name",
+            "Barcode",
+            "Net price EUR",
+            "Description"
+          ],
+          "source_id": "01a1d671-e25c-7084-acb8-3b1d3024266c",
+          "formula_columns": [],
+          "header_candidate": false
+        },
+        "provenance": {},
+        "values": {
+          "name": "Scan Lentils",
+          "price": "7.90",
+          "barcode": "0000000000107",
+          "description": "Green lentils cleaned and sorted for cooking."
+        },
+        "status": "ready",
+        "issues": []
+      }
+    ],
+    "costs": [
+      {
+        "request_key": "01a1d671-e23f-7562-962c-82de09a56538:01a1d671-e556-729d-9781-a83005c68e64",
+        "upper_bound_usd": 2.16384,
+        "actual_usd": 0.015986,
+        "state": "settled",
+        "usage": {
+          "model": "claude-sonnet-5-5",
+          "provider_usage": {
+            "speed": "standard",
+            "input_tokens": 4253,
+            "service_tier": "standard",
+            "inference_geo": "global",
+            "output_tokens": 748,
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "output_tokens_details": {
+              "thinking_tokens": 471
+            },
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          },
+          "pricing_version": "2026-11-13"
+        }
+      },
+      {
+        "request_key": "01a1d671-e23f-7562-962c-82de09a56538:01a1d672-06bc-7507-9ed3-f61a3c984d41",
+        "upper_bound_usd": 2.16384,
+        "actual_usd": 0.016516,
+        "state": "settled",
+        "usage": {
+          "model": "claude-sonnet-5-5",
+          "provider_usage": {
+            "speed": "standard",
+            "input_tokens": 4253,
+            "service_tier": "standard",
+            "inference_geo": "global",
+            "output_tokens": 801,
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "output_tokens_details": {
+              "thinking_tokens": 560
+            },
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          },
+          "pricing_version": "2026-11-13"
+        }
+      },
+      {
+        "request_key": "01a1d671-e23f-7562-962c-82de09a56538:01a1d672-281a-70fd-824e-5a8206148b52",
+        "upper_bound_usd": 2.16384,
+        "actual_usd": 0.017626,
+        "state": "settled",
+        "usage": {
+          "model": "claude-sonnet-5-5",
+          "provider_usage": {
+            "speed": "standard",
+            "input_tokens": 4253,
+            "service_tier": "standard",
+            "inference_geo": "global",
+            "output_tokens": 912,
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "output_tokens_details": {
+              "thinking_tokens": 666
+            },
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          },
+          "pricing_version": "2026-11-13"
+        }
+      },
+      {
+        "request_key": "01a1d671-e25c-7084-acb8-3b1d3024266c:01a1d672-4797-7196-a459-3c0ec511a504",
+        "upper_bound_usd": 2.16384,
+        "actual_usd": 0.035346,
+        "state": "settled",
+        "usage": {
+          "model": "claude-sonnet-5-5",
+          "provider_usage": {
+            "speed": "standard",
+            "input_tokens": 12018,
+            "service_tier": "standard",
+            "inference_geo": "global",
+            "output_tokens": 1131,
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "output_tokens_details": {
+              "thinking_tokens": 706
+            },
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          },
+          "pricing_version": "2026-11-13"
+        }
+      },
+      {
+        "request_key": "01a1d671-e25c-7084-acb8-3b1d3024266c:01a1d672-7354-70c3-a347-b7f5b15eb937",
+        "upper_bound_usd": 2.16384,
+        "actual_usd": 0.025178,
+        "state": "settled",
+        "usage": {
+          "model": "claude-sonnet-5-5",
+          "provider_usage": {
+            "speed": "standard",
+            "input_tokens": 7359,
+            "service_tier": "standard",
+            "inference_geo": "global",
+            "output_tokens": 1046,
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "output_tokens_details": {
+              "thinking_tokens": 795
+            },
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
+          },
+          "pricing_version": "2026-11-13"
+        }
+      }
+    ]
+  }
+}

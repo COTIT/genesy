@@ -8,6 +8,10 @@
 
 export type ProductsListParams = {
 /**
+ * JSON array of typed custom-field filters (AND), at most 20.
+ */
+custom_filters?: string;
+/**
  * Search on name, number, references and codes.
  */
 q?: string;

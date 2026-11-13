@@ -18,6 +18,86 @@ fn names(res: &Value) -> Vec<String> {
 }
 
 #[sqlx::test]
+async fn category_delete_waits_before_locking_a_bulk_review_dependency(pool: PgPool) {
+    use sqlx::Row;
+    use std::time::Duration;
+    use uuid::Uuid;
+    let cats = Api::new(pool.clone(), "/erp/product-categories").await;
+    let category = cats
+        .create(json!({"name":"Bulk category"}), "product_category_id")
+        .await;
+    let (status, body) = send(
+        &cats.app,
+        Method::POST,
+        &format!("/v1/workspace/{}/products", cats.ws),
+        Some(json!({"name":"Linked product","price":"1","category_id":category})),
+        Some(&cats.owner),
+    )
+    .await;
+    assert_eq!(status, StatusCode::CREATED, "{body}");
+    let product = Uuid::parse_str(body["data"]["product_id"].as_str().unwrap()).unwrap();
+    let workspace = Uuid::parse_str(&cats.ws).unwrap();
+    let category = Uuid::parse_str(&category).unwrap();
+    let mut bulk = pool.begin().await.unwrap();
+    let pid: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
+        .fetch_one(&mut *bulk)
+        .await
+        .unwrap();
+    sqlx::query(
+        "SELECT pg_advisory_xact_lock(hashtextextended('product_identity:' || $1::text,0))",
+    )
+    .bind(workspace)
+    .execute(&mut *bulk)
+    .await
+    .unwrap();
+    sqlx::query("SELECT id FROM products WHERE workspace_id=$1 AND id=$2 FOR UPDATE")
+        .bind(workspace)
+        .bind(product)
+        .fetch_one(&mut *bulk)
+        .await
+        .unwrap();
+    let app = cats.app.clone();
+    let token = cats.owner.clone();
+    let path = format!(
+        "/v1/workspace/{}/erp/product-categories/{category}",
+        cats.ws
+    );
+    let deletion =
+        tokio::spawn(async move { send(&app, Method::DELETE, &path, None, Some(&token)).await });
+    let waiting=tokio::time::timeout(Duration::from_secs(2),async{
+        loop{
+            let row=sqlx::query("SELECT query LIKE '%product_identity:%' AS identity_first FROM pg_stat_activity WHERE datname=current_database() AND pid<>$1 AND $1=ANY(pg_blocking_pids(pid)) AND wait_event_type='Lock' AND (query LIKE '%product_identity:%' OR query LIKE '%UPDATE product_categories%') LIMIT 1").bind(pid).fetch_optional(&pool).await.unwrap();
+            if let Some(row)=row{break row.get::<bool,_>("identity_first");}
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    }).await.expect("category delete did not reach its lock wait");
+    assert!(
+        waiting,
+        "category delete must wait on identity before holding the category row"
+    );
+    // This is the dependency lock material_in takes after locking the product.
+    sqlx::query("SET LOCAL lock_timeout='250ms'")
+        .execute(&mut *bulk)
+        .await
+        .unwrap();
+    sqlx::query("SELECT id FROM product_categories WHERE workspace_id=$1 AND id=$2 FOR SHARE")
+        .bind(workspace)
+        .bind(category)
+        .fetch_one(&mut *bulk)
+        .await
+        .unwrap();
+    bulk.commit().await.unwrap();
+    let (status, body) = deletion.await.unwrap();
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let category: Option<Uuid> = sqlx::query_scalar("SELECT category_id FROM products WHERE id=$1")
+        .bind(product)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert!(category.is_none());
+}
+
+#[sqlx::test]
 async fn brand_crud_round_trip(pool: PgPool) {
     let api = Api::new(pool, "/erp/product-brands").await;
 

@@ -17679,5 +17679,1016 @@
       "mode": "reconcile_only"
     },
     "confirmationFields": []
+  },
+  "product_bulk_mappings_get": {
+    "method": "GET",
+    "path": "/workspace/{workspace}/product-bulk-runs/mappings",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [],
+    "risk": "read",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_mappings_save": {
+    "method": "POST",
+    "path": "/workspace/{workspace}/product-bulk-runs/mappings",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [
+      "record"
+    ],
+    "risk": "write",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_report": {
+    "method": "GET",
+    "path": "/workspace/{workspace}/product-bulk-runs/{run}/report",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [],
+    "risk": "read",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_runs_approve": {
+    "method": "POST",
+    "path": "/workspace/{workspace}/product-bulk-runs/{run}/approve",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [
+      "record"
+    ],
+    "risk": "high",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_runs_cancel": {
+    "method": "POST",
+    "path": "/workspace/{workspace}/product-bulk-runs/{run}/cancel",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [
+      "record"
+    ],
+    "risk": "write",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_runs_create": {
+    "method": "POST",
+    "path": "/workspace/{workspace}/product-bulk-runs",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [
+      "record"
+    ],
+    "risk": "write",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_runs_get": {
+    "method": "GET",
+    "path": "/workspace/{workspace}/product-bulk-runs/{run}",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [],
+    "risk": "read",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_runs_list": {
+    "method": "GET",
+    "path": "/workspace/{workspace}/product-bulk-runs",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [],
+    "risk": "read",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_runs_mapping": {
+    "method": "PATCH",
+    "path": "/workspace/{workspace}/product-bulk-runs/{run}/mapping",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [
+      "record"
+    ],
+    "risk": "write",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_runs_raw": {
+    "method": "GET",
+    "path": "/workspace/{workspace}/product-bulk-runs/{run}/rows/{row}/raw",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [],
+    "risk": "read",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_runs_remainder": {
+    "method": "POST",
+    "path": "/workspace/{workspace}/product-bulk-runs/{run}/remainder",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [
+      "record"
+    ],
+    "risk": "write",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_runs_resume": {
+    "method": "POST",
+    "path": "/workspace/{workspace}/product-bulk-runs/{run}/resume",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [
+      "record"
+    ],
+    "risk": "write",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_runs_review": {
+    "method": "POST",
+    "path": "/workspace/{workspace}/product-bulk-runs/{run}/reviews",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [
+      "record"
+    ],
+    "risk": "write",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_runs_row": {
+    "method": "PATCH",
+    "path": "/workspace/{workspace}/product-bulk-runs/{run}/rows/{row}",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [
+      "record"
+    ],
+    "risk": "write",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_runs_rows": {
+    "method": "GET",
+    "path": "/workspace/{workspace}/product-bulk-runs/{run}/rows",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [],
+    "risk": "read",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_runs_source": {
+    "method": "POST",
+    "path": "/workspace/{workspace}/product-bulk-runs/{run}/sources",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [
+      "record"
+    ],
+    "risk": "write",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_runs_stage": {
+    "method": "POST",
+    "path": "/workspace/{workspace}/product-bulk-runs/{run}/stage",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [
+      "record"
+    ],
+    "risk": "write",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_settings_get": {
+    "method": "GET",
+    "path": "/workspace/{workspace}/product-bulk-runs/settings",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [],
+    "risk": "read",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_settings_set": {
+    "method": "POST",
+    "path": "/workspace/{workspace}/product-bulk-runs/settings",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "workspace_admin"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [
+      "record"
+    ],
+    "risk": "write",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_bulk_template": {
+    "method": "GET",
+    "path": "/workspace/{workspace}/product-bulk-runs/template",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "product.list",
+        "product.view"
+      ],
+      "anyOf": [],
+      "predicates": [
+        "Run creator or workspace administrator; live product grants checked for each approved operation; AI cannot approve run scopes"
+      ],
+      "authority": [
+        "apps/api/src/modules/product_bulk_runs/handlers.rs",
+        "apps/api/src/modules/product_bulk_runs/service.rs",
+        "apps/api/src/modules/product_bulk_runs/worker.rs",
+        "apps/api/src/modules/product_bulk_runs/spend.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [],
+    "risk": "read",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_fields_archive": {
+    "method": "DELETE",
+    "path": "/workspace/{workspace}/product-fields/{field}",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "workspace_admin"
+      ],
+      "anyOf": [],
+      "predicates": [],
+      "authority": [
+        "apps/api/src/modules/product_fields/handlers.rs",
+        "apps/api/src/modules/product_fields/service.rs",
+        "apps/api/src/modules/product_fields/repo.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [
+      "record"
+    ],
+    "risk": "high",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_fields_create": {
+    "method": "POST",
+    "path": "/workspace/{workspace}/product-fields",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "workspace_admin"
+      ],
+      "anyOf": [],
+      "predicates": [],
+      "authority": [
+        "apps/api/src/modules/product_fields/handlers.rs",
+        "apps/api/src/modules/product_fields/service.rs",
+        "apps/api/src/modules/product_fields/repo.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [
+      "record"
+    ],
+    "risk": "write",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_fields_get": {
+    "method": "GET",
+    "path": "/workspace/{workspace}/product-fields/{field}",
+    "disposition": "execute",
+    "reason": "Read workspace product field definitions for exact typed mapping; native routes enforce access",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [],
+      "anyOf": [
+        "product.list",
+        "product.view"
+      ],
+      "predicates": [],
+      "authority": [
+        "apps/api/src/modules/product_fields/handlers.rs",
+        "apps/api/src/modules/product_fields/service.rs",
+        "apps/api/src/modules/product_fields/repo.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [],
+    "risk": "read",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_fields_list": {
+    "method": "GET",
+    "path": "/workspace/{workspace}/product-fields",
+    "disposition": "execute",
+    "reason": "Read workspace product field definitions for exact typed mapping; native routes enforce access",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [],
+      "anyOf": [
+        "product.list",
+        "product.view"
+      ],
+      "predicates": [],
+      "authority": [
+        "apps/api/src/modules/product_fields/handlers.rs",
+        "apps/api/src/modules/product_fields/service.rs",
+        "apps/api/src/modules/product_fields/repo.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [],
+    "risk": "read",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
+  },
+  "product_fields_update": {
+    "method": "PATCH",
+    "path": "/workspace/{workspace}/product-fields/{field}",
+    "disposition": "internal",
+    "reason": "Native Flow import controls; only the dedicated draft/status bridge is model-accessible. Approval and administration stay in authenticated Flow UI.",
+    "authorization": {
+      "schemes": [
+        "bearer"
+      ],
+      "boundary": "workspace",
+      "allOf": [
+        "workspace_admin"
+      ],
+      "anyOf": [],
+      "predicates": [],
+      "authority": [
+        "apps/api/src/modules/product_fields/handlers.rs",
+        "apps/api/src/modules/product_fields/service.rs",
+        "apps/api/src/modules/product_fields/repo.rs"
+      ],
+      "roleAnyOf": [],
+      "requirements": [
+        {
+          "bearer": []
+        }
+      ]
+    },
+    "effects": [
+      "record"
+    ],
+    "risk": "write",
+    "handoff": null,
+    "reconciliation": [],
+    "retry": {
+      "mode": "reconcile_only"
+    },
+    "confirmationFields": []
   }
 }

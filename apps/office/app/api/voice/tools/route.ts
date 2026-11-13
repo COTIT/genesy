@@ -46,6 +46,11 @@ import {
   historyTool,
   HISTORY_TOOL,
 } from "@/lib/voice/history"
+import {
+  productBulk,
+  productBulkTool,
+  PRODUCT_BULK_OPERATION,
+} from "@/lib/voice/product-bulk"
 export const runtime = "nodejs"
 
 const statusTool = {
@@ -144,6 +149,13 @@ async function handle(request: Request, scope: GapScope) {
     const statusRequest =
       input.command === "status" ||
       (input.command === "execute" &&
+        input.operationId === PRODUCT_BULK_OPERATION &&
+        ["status", "rows", "raw", "template", "cancel"].includes(
+          String(
+            (input.arguments as Record<string, unknown> | undefined)?.command
+          )
+        )) ||
+      (input.command === "execute" &&
         (input.operationId === BATCH_STATUS_OPERATION ||
           input.operationId === statusTool.id))
     if (!statusRequest) await requireAssistantAdmission()
@@ -204,10 +216,21 @@ async function handle(request: Request, scope: GapScope) {
       const wantsImport =
         canImport &&
         /import|price ?list|spreadsheet|excel|xlsx|csv|sheet/i.test(query)
+      const bulkList = getOperation("products_list")
+      const bulkView = getOperation("products_get")
+      const wantsProductBulk =
+        bulkList &&
+        bulkView &&
+        isToolAllowed(bulkList, context.permissions) &&
+        isToolAllowed(bulkView, context.permissions) &&
+        /assistant_product_bulk|product|catalog|katalog|bidhaa|migrat|migre|bulk|import|spreadsheet|excel|xlsx|csv|pdf/i.test(
+          query
+        )
       if (
         !found.length &&
         !wantsHistory &&
         !wantsImport &&
+        !wantsProductBulk &&
         ![
           BATCH_PREPARE_OPERATION,
           BATCH_STATUS_OPERATION,
@@ -229,28 +252,33 @@ async function handle(request: Request, scope: GapScope) {
         tools:
           query === HISTORY_TOOL && wantsHistory
             ? [historyTool]
-            : query === BATCH_PREPARE_OPERATION
-              ? [batchPrepareTool]
-              : query === BATCH_STATUS_OPERATION
-                ? [batchStatusTool]
-                : query === statusTool.id
-                  ? [statusTool]
-                  : query === IMPORT_PRICES_OPERATION
-                    ? wantsImport
-                      ? [importPricesTool]
-                      : []
-                    : [
-                        ...(wantsHistory ? [historyTool] : []),
-                        ...(wantsImport ? [importPricesTool] : []),
-                        ...found,
-                        ...(manyRecords.test(query)
-                          ? [batchPrepareTool, batchStatusTool]
-                          : []),
-                        ...(/status|task|pending|last/i.test(query)
-                          ? [statusTool]
-                          : []),
-                        ...(asksForPage(query) ? [pageTool] : []),
-                      ],
+            : query === PRODUCT_BULK_OPERATION
+              ? wantsProductBulk
+                ? [productBulkTool]
+                : []
+              : query === BATCH_PREPARE_OPERATION
+                ? [batchPrepareTool]
+                : query === BATCH_STATUS_OPERATION
+                  ? [batchStatusTool]
+                  : query === statusTool.id
+                    ? [statusTool]
+                    : query === IMPORT_PRICES_OPERATION
+                      ? wantsImport
+                        ? [importPricesTool]
+                        : []
+                      : [
+                          ...(wantsHistory ? [historyTool] : []),
+                          ...(wantsProductBulk ? [productBulkTool] : []),
+                          ...(wantsImport ? [importPricesTool] : []),
+                          ...found,
+                          ...(manyRecords.test(query) && !wantsProductBulk
+                            ? [batchPrepareTool, batchStatusTool]
+                            : []),
+                          ...(/status|task|pending|last/i.test(query)
+                            ? [statusTool]
+                            : []),
+                          ...(asksForPage(query) ? [pageTool] : []),
+                        ],
         domains: [
           ...new Set(
             tools
@@ -266,6 +294,24 @@ async function handle(request: Request, scope: GapScope) {
       !Array.isArray(input.arguments)
         ? (input.arguments as Record<string, unknown>)
         : {}
+    if (
+      input.command === "execute" &&
+      input.operationId === PRODUCT_BULK_OPERATION
+    ) {
+      const list = getOperation("products_list")
+      const view = getOperation("products_get")
+      if (
+        !list ||
+        !view ||
+        !isToolAllowed(list, context.permissions) ||
+        !isToolAllowed(view, context.permissions)
+      )
+        throw new VoiceError(
+          "Product list and view permissions are required.",
+          403
+        )
+      return voiceResponse(await productBulk(argumentsValue, context, files))
+    }
     if (input.command === "execute" && input.operationId === HISTORY_TOOL) {
       if (files.size) throw new VoiceError("History reads do not accept files.")
       return voiceResponse({

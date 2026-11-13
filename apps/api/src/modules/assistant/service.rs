@@ -350,7 +350,7 @@ pub fn request_hash(
 
 /// Reviewed GET previews can create PDF/file effects; ordinary reads need no claim.
 pub fn reviewable_method(method: &str, operation: &str) -> bool {
-    if gateway_financial_operation(operation) {
+    if gateway_financial_operation(operation) || operation.starts_with("product_bulk_") {
         return false;
     }
     matches!(method, "POST" | "PUT" | "PATCH" | "DELETE")
@@ -465,6 +465,7 @@ pub fn resolve_operation(method: &str, path: &str) -> Result<String, AppError> {
         .as_ref()
         .map_err(|_| AppError::Internal("assistant operation inventory failed".into()))?;
     if path.contains("/assistant/")
+        || path.contains("/product-bulk-runs")
         || closed_design_route(method, path)
         || path.contains("/app-keys") && method != "DELETE"
         || path.contains("/credentials")
@@ -694,6 +695,19 @@ mod tests {
 #[cfg(test)]
 mod invoice_private_digest_tests {
     use super::*;
+    #[test]
+    fn bulk_grants_cannot_be_created_through_the_legacy_action_bridge() {
+        for suffix in ["approve", "reviews", "settings", "stage"] {
+            assert!(
+                resolve_operation(
+                    "POST",
+                    &format!("/v1/workspace/w/product-bulk-runs/r/{suffix}")
+                )
+                .is_err()
+            );
+        }
+        assert!(!reviewable_method("POST", "product_bulk_runs_approve"));
+    }
     #[test]
     fn invoice_digest_stays_private_and_read_permission_controls_summary() {
         let row = json!({"review_facts":{"version":1,"operation_id":"invoices_send","facts":{"kind":"invoice","locked":{"id":"invoice","line_count":1000,"lines_omitted":995,"material_sha256":"private-digest"}}}});

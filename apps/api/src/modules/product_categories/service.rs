@@ -88,10 +88,14 @@ pub async fn update(
 
 /// Soft delete, else 404.
 pub async fn delete(state: &AppState, workspace_id: Uuid, id: &str) -> Result<(), AppError> {
-    repo::soft_delete(&state.db, workspace_id, parse(id)?)
-        .await?
-        .then_some(())
-        .ok_or(AppError::NotFound)
+    let id = parse(id)?;
+    let mut tx = state.db.begin().await?;
+    crate::modules::products::service::lock_identity(&mut tx, workspace_id).await?;
+    if !repo::soft_delete(&mut *tx, workspace_id, id).await? {
+        return Err(AppError::NotFound);
+    }
+    tx.commit().await?;
+    Ok(())
 }
 
 async fn check_parent(

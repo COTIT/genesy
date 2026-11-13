@@ -39,20 +39,33 @@ env_setup() {
   # File uploads likewise: each environment's own B2 bucket (staging's is not production's).
   [[ -f "$DIR/secrets/b2_uploads_key" && -f "$DIR/docker-compose.uploads.yml" ]] \
     && COMPOSE+=(-f "$DIR/docker-compose.uploads.yml")
-  local assistant_secrets
-  assistant_secrets="$(env_value SECRETS_DIR)"
-  assistant_secrets="${assistant_secrets:-./secrets}"
-  [[ "$assistant_secrets" == /* ]] || assistant_secrets="$DIR/$assistant_secrets"
+  local runtime_secrets product_bulk_enabled
+  runtime_secrets="$(env_value SECRETS_DIR)"
+  runtime_secrets="${runtime_secrets:-./secrets}"
+  [[ "$runtime_secrets" == /* ]] || runtime_secrets="$DIR/$runtime_secrets"
   case "$(env_value ASSISTANT_ENABLED)" in
     "" | false)
       # Cleanup keeps its provider credentials while new sessions are paused.
-      [[ -f "$assistant_secrets/elevenlabs_api_key" && -f "$DIR/docker-compose.assistant.yml" ]] \
+      [[ -f "$runtime_secrets/elevenlabs_api_key" && -f "$DIR/docker-compose.assistant.yml" ]] \
         && COMPOSE+=(-f "$DIR/docker-compose.assistant.yml")
       :
       ;;
     true) COMPOSE+=(-f "$DIR/docker-compose.assistant.yml") ;;
     *) die "ASSISTANT_ENABLED must be true or false" ;;
   esac
+  product_bulk_enabled="$(env_value PRODUCT_BULK_ENABLED)"
+  case "$product_bulk_enabled" in
+    "" | false | true) ;;
+    *) die "PRODUCT_BULK_ENABLED must be true or false" ;;
+  esac
+  # Pausing admission keeps credentials and the independent uploads overlay for existing jobs.
+  if [[ "$product_bulk_enabled" == true || -f "$runtime_secrets/anthropic_api_key" ]]; then
+    [[ -f "$runtime_secrets/anthropic_api_key" && -s "$runtime_secrets/anthropic_api_key" ]] \
+      || die "product bulk requires a nonempty $runtime_secrets/anthropic_api_key"
+    [[ -f "$DIR/docker-compose.product-bulk.yml" ]] \
+      || die "missing $DIR/docker-compose.product-bulk.yml"
+    COMPOSE+=(-f "$DIR/docker-compose.product-bulk.yml")
+  fi
   COMPOSE+=(--env-file "$ENV_FILE")
 }
 

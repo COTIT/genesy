@@ -36,6 +36,8 @@ pub const PHYSICAL: [&str; 2] = ["physical", "physical_second_chance"];
 /// Every column a request may set. `None` = not sent (update keeps), `Some(None)` = clear.
 #[derive(Default, Clone)]
 pub struct Fields {
+    /// UUID-keyed typed field patch; absent keeps existing values.
+    pub custom_fields: Option<Map<String, Value>>,
     pub name: Option<String>,
     pub brand: Option<Option<String>>,
     pub kind: Option<String>,
@@ -323,7 +325,15 @@ fn fields(r: &mut Rules, m: &Map<String, Value>, create: bool) -> Fields {
         .get("multi_set_product_ids")
         .and_then(|v| set_children(r, v));
     let currency_id = id(r, m, "currency_id", BAD_CURRENCY).flatten();
+    let custom_fields = m.get("custom_fields").and_then(|v| match v.as_object() {
+        Some(object) => Some(object.clone()),
+        _ => {
+            r.add("custom_fields", "Use an object keyed by field UUIDs.");
+            None
+        }
+    });
     Fields {
+        custom_fields,
         name: text(r, m, "name", 255).flatten(),
         brand: text(r, m, "brand", 255),
         kind,
@@ -513,6 +523,8 @@ impl Validate for SearchBody {
 #[derive(Deserialize, IntoParams)]
 #[into_params(parameter_in = Query)]
 pub struct ListQuery {
+    /// JSON array of typed custom-field filters (AND), at most 20.
+    pub custom_filters: Option<String>,
     /// Search on name, number, references and codes.
     pub q: Option<String>,
     /// Same as `q` (used when `q` is absent).
@@ -592,6 +604,9 @@ pub struct HistoryQuery {
         JSON numbers also work."
 )]
 pub struct ProductRequestDoc {
+    /// Field UUID to typed value. Absent keeps; null clears only nullable fields.
+    #[schema(value_type=Option<Object>)]
+    custom_fields: Option<Value>,
     /// max 255; required on create
     name: Option<String>,
     /// max 255
@@ -701,4 +716,20 @@ pub struct SaleStatics {
 #[derive(ToSchema)]
 pub struct LinkedProducts {
     products: Vec<Uuid>,
+}
+
+/// Decode native product values for durable imports using exactly the HTTP validator.
+pub(crate) fn decode_values(value: Value, create: bool) -> Result<Fields, crate::AppError> {
+    let mut rules = Rules::default();
+    let fields = if create {
+        serde_json::from_value::<CreateProductRequest>(value)
+            .map_err(|_| crate::AppError::field("values", "Use a product object."))?
+            .validate(&mut rules)
+    } else {
+        serde_json::from_value::<UpdateProductRequest>(value)
+            .map_err(|_| crate::AppError::field("values", "Use a product object."))?
+            .validate(&mut rules)
+    };
+    rules.into_result()?;
+    fields.ok_or_else(|| crate::AppError::field("values", "Use valid product values."))
 }

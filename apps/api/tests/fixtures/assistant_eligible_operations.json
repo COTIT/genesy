@@ -290,6 +290,8 @@
     "product_categories_get",
     "product_categories_list",
     "product_categories_update",
+    "product_fields_get",
+    "product_fields_list",
     "product_variants_create",
     "product_variants_delete",
     "product_variants_generate",

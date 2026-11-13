@@ -56,6 +56,10 @@ pub const PAYMENT_SWEEP: &str = "payment_sweep";
 
 /// Mails due scheduled reports (every 5 min, `scheduled_reports::runner`).
 pub const SCHEDULED_REPORTS: &str = "scheduled_reports";
+/// Revisioned product preparation and approved native writes.
+pub const PRODUCT_BULK: &str = "product_bulk";
+/// Expire drafts and remove private sources/audit within the import retention policy.
+pub const PRODUCT_BULK_PRUNE: &str = "product_bulk_prune";
 
 /// Every kind this build can run; the claim never takes another.
 pub const KINDS: &[&str] = &[
@@ -73,13 +77,20 @@ pub const KINDS: &[&str] = &[
     PAYMENT_INBOX,
     PAYMENT_SWEEP,
     SCHEDULED_REPORTS,
+    PRODUCT_BULK,
+    PRODUCT_BULK_PRUNE,
 ];
 
 /// One sweep chunk outside the rail (tests, load tests): see `stock::repo::seed_chunk`.
 pub use crate::modules::stock::repo::seed_chunk;
 
 /// Recurring jobs.
-pub static SCHEDULES: [Schedule; 9] = [
+pub static SCHEDULES: [Schedule; 10] = [
+    Schedule {
+        name: PRODUCT_BULK_PRUNE,
+        kind: PRODUCT_BULK_PRUNE,
+        every: Every::Minutes(1),
+    },
     Schedule {
         name: INVOICE_DELIVERY_SWEEP,
         kind: INVOICE_DELIVERY_SWEEP,
@@ -158,6 +169,14 @@ pub fn handler(ctx: Ctx) -> Handler {
 /// Run one job (or one chunk) of a known kind.
 pub async fn dispatch(ctx: &Ctx, job: Claimed) -> Result<Step, AppError> {
     match job.kind.as_str() {
+        PRODUCT_BULK => return crate::modules::product_bulk_runs::worker::run(ctx, &job).await,
+        PRODUCT_BULK_PRUNE => {
+            if crate::modules::product_bulk_runs::worker::prune(&ctx.db, ctx.files.as_ref()).await?
+                > 0
+            {
+                return Ok(Step::More);
+            }
+        }
         INVOICE_DELIVERY => return crate::modules::invoices::delivery::run(ctx, &job).await,
         INVOICE_DELIVERY_SWEEP => return crate::modules::invoices::delivery::sweep(ctx).await,
         ASSISTANT_CLEANUP => return crate::modules::assistant::cleanup::run(ctx).await,

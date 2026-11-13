@@ -122,7 +122,7 @@ export const psql = (sql) =>
 
 /** The API's env for the stack: debug build, fake payments, rate limits out of the way. */
 export function apiEnv(state) {
-  return {
+  const env = {
     ...process.env,
     DATABASE_URL,
     BIND_ADDR: `127.0.0.1:${PORTS.api}`,
@@ -136,6 +136,7 @@ export function apiEnv(state) {
     PAYMENTS_PROVIDER: "fake",
     GENESY_ALLOW_DEMO_SEED: "1",
     SIGNUP_ENABLED: "true",
+    PRODUCT_BULK_ENABLED: "true",
     SKIP_BOOT_MIGRATIONS: "true",
     CREDENTIALS_KEY: state.credentialsKey,
     // The stack's own Garage: product images and other uploads work as on staging.
@@ -152,6 +153,10 @@ export function apiEnv(state) {
     INVITES_PER_HOUR: "10000",
     ...(state.voice ? { ASSISTANT_BRIDGE_SECRET: state.voice.bridgeSecret } : {}),
   }
+  // Synthetic bulk fixtures never use a developer's live extraction credentials.
+  delete env.ANTHROPIC_API_KEY
+  delete env.ANTHROPIC_API_KEY_FILE
+  return env
 }
 
 /** Office's restricted checkpoint login on the stack (deploy/assistant-role.sql, environment "local"). */

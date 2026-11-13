@@ -10,6 +10,7 @@ import { ReviewTitle } from "@genesy/voice/components/review-details"
 import { clarifyOf, taskView, type TaskState } from "@genesy/voice/lib/task"
 import { flowStore, useFlow } from "@/lib/flow-store"
 import { taskStore, useTask } from "@/lib/task-store"
+import { ProductBulkIndicator } from "./product-bulk-indicator"
 
 const ENDED: TaskState[] = ["completed", "partial", "failed", "cancelled", "unknown"]
 
@@ -46,6 +47,15 @@ export function useOpenTask() {
 
 /** A compact line while a task is active: state, an honest milestone, and only real controls. */
 export function TaskCapsule() {
+  return (
+    <div className="flex min-w-0 flex-col gap-2">
+      <VoiceTaskCapsule />
+      <ProductBulkIndicator />
+    </div>
+  )
+}
+
+function VoiceTaskCapsule() {
   const t = useTranslations("task")
   const voice = useVoice()
   const view = useTaskView()

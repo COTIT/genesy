@@ -56,6 +56,12 @@ const SECURE = /^\/voice\/secure\?operation=[a-z0-9_]{1,64}$/
 // Exact matches only: no prefix, decoding or normalising, so no path trick can widen the list.
 export function flowHref(href: string, office: string | null): string {
   if (href === "/settings/storefront") return "/storefront"
+  if (
+    /^\/imports\/products\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      href
+    )
+  )
+    return href
   if (!office) return ""
   if (OFFICE_PAGES.has(href) || SECURE.test(href)) return `${office}${href}`
   const record = RECORD.exec(href)

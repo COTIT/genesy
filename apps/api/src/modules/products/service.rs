@@ -146,12 +146,13 @@ pub async fn create(
     Ok(id)
 }
 
-async fn create_in(
+pub(crate) async fn create_in(
     conn: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     workspace_id: Uuid,
     f: Fields,
     actor: Actor,
 ) -> Result<Uuid, AppError> {
+    lock_identity(conn, workspace_id).await?;
     // Lock first, then read the series, so the snapshot is the latest settings.
     repo::lock_numbers(conn, workspace_id).await?;
     let mut row = prepare_create(conn, workspace_id, &f).await?;
@@ -209,6 +210,13 @@ async fn create_in(
             repo::set_default_warehouse(conn, workspace_id, row.id, main).await?;
         }
     }
+    crate::modules::product_fields::service::apply(
+        conn,
+        workspace_id,
+        row.id,
+        f.custom_fields.as_ref(),
+    )
+    .await?;
     events::product_changed(conn, workspace_id, row.id, "created").await?;
     Ok(row.id)
 }
@@ -223,12 +231,26 @@ pub async fn update(
 ) -> Result<(), AppError> {
     let id = parse(id)?;
     let mut tx = state.db.begin().await?;
-    let before = repo::find_locked(&mut tx, workspace_id, id)
+    update_in(&mut tx, workspace_id, id, f, actor).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+/// Native mutation inside the caller's fenced transaction.
+pub(crate) async fn update_in(
+    conn: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    workspace_id: Uuid,
+    id: Uuid,
+    f: Fields,
+    actor: Actor,
+) -> Result<(), AppError> {
+    lock_identity(conn, workspace_id).await?;
+    let before = repo::find_locked(conn, workspace_id, id)
         .await?
         .ok_or(AppError::NotFound)?;
-    let row = prepare_update(&mut tx, workspace_id, &before, &f).await?;
-    super::approval::check_product(&mut tx, workspace_id, &row).await?;
-    repo::update(&mut tx, workspace_id, &row).await?;
+    let row = prepare_update(conn, workspace_id, &before, &f).await?;
+    super::approval::check_product(conn, workspace_id, &row).await?;
+    repo::update(conn, workspace_id, &row).await?;
     if row.price != before.price {
         // Inheriting variants (the default size made with the product) follow, priced as at
         // create.
@@ -240,11 +262,11 @@ pub async fn update(
         )
         .map_err(out_of_range)?;
         let price = price.unwrap_or(row.price);
-        repo::sync_inheriting_variants(&mut tx, workspace_id, id, price, row.price, impact).await?;
+        repo::sync_inheriting_variants(conn, workspace_id, id, price, row.price, impact).await?;
     }
     let changes = changed_prices(&before, &row);
     repo::insert_history(
-        &mut tx,
+        conn,
         workspace_id,
         id,
         None,
@@ -254,10 +276,16 @@ pub async fn update(
     )
     .await?;
     if let Some(children) = bundle_children(&row, &f) {
-        repo::set_children(&mut tx, workspace_id, id, children).await?;
+        repo::set_children(conn, workspace_id, id, children).await?;
     }
-    events::product_changed(&mut tx, workspace_id, id, "updated").await?;
-    tx.commit().await?;
+    crate::modules::product_fields::service::apply(
+        conn,
+        workspace_id,
+        id,
+        f.custom_fields.as_ref(),
+    )
+    .await?;
+    events::product_changed(conn, workspace_id, id, "updated").await?;
     Ok(())
 }
 
@@ -269,20 +297,41 @@ pub async fn duplicate(
     user_id: Uuid,
 ) -> Result<Uuid, AppError> {
     let mut tx = state.db.begin().await?;
+    lock_identity(&mut tx, workspace_id).await?;
     repo::lock_numbers(&mut tx, workspace_id).await?;
     let src = repo::find_locked(&mut tx, workspace_id, parse(id)?)
         .await?
         .ok_or(AppError::NotFound)?;
+    let mut fields = duplicate_fields(&src);
+    let values = crate::modules::product_fields::repo::values(&mut *tx, workspace_id, &[src.id])
+        .await?
+        .remove(&src.id)
+        .unwrap_or_else(|| serde_json::json!({}));
+    let defs =
+        crate::modules::product_fields::repo::definitions(&mut tx, workspace_id, true).await?;
+    fields.custom_fields = Some(
+        values
+            .as_object()
+            .unwrap()
+            .iter()
+            .filter(|(key, _)| {
+                defs.iter()
+                    .any(|d| d.id.to_string() == **key && d.status != "archived")
+            })
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect(),
+    );
     let id = create_in(
         &mut tx,
         workspace_id,
-        duplicate_fields(&src),
+        fields,
         Actor {
             user_id,
             flow: "system",
         },
     )
     .await?;
+    crate::modules::product_fields::service::copy(&mut tx, workspace_id, src.id, id).await?;
     tx.commit().await?;
     Ok(id)
 }
@@ -290,6 +339,7 @@ pub async fn duplicate(
 /// Native copy fields, shared with approval quotes before any insert.
 pub(super) fn duplicate_fields(src: &ProductRow) -> Fields {
     Fields {
+        custom_fields: None,
         name: Some(src.name.clone()),
         brand: Some(src.brand.clone()),
         kind: Some(src.kind.clone()),
@@ -349,14 +399,24 @@ pub(super) fn duplicate_fields(src: &ProductRow) -> Fields {
 pub async fn delete(state: &AppState, workspace_id: Uuid, id: &str) -> Result<(), AppError> {
     let id = parse(id)?;
     let mut tx = state.db.begin().await?;
-    if !repo::lock_for_delete(&mut *tx, workspace_id, id).await? {
+    delete_in(&mut tx, workspace_id, id).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+pub(crate) async fn delete_in(
+    conn: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    workspace_id: Uuid,
+    id: Uuid,
+) -> Result<(), AppError> {
+    lock_identity(conn, workspace_id).await?;
+    if !repo::lock_for_delete(&mut **conn, workspace_id, id).await? {
         return Err(AppError::NotFound);
     }
-    invoices::service::product_deletable(&mut tx, workspace_id, id).await?;
-    crate::modules::assistant::impact::check(&mut tx, workspace_id, "product", id).await?;
-    repo::soft_delete(&mut *tx, workspace_id, id).await?;
-    events::product_changed(&mut tx, workspace_id, id, "deleted").await?;
-    tx.commit().await?;
+    invoices::service::product_deletable(conn, workspace_id, id).await?;
+    crate::modules::assistant::impact::check(conn, workspace_id, "product", id).await?;
+    repo::soft_delete(&mut **conn, workspace_id, id).await?;
+    events::product_changed(conn, workspace_id, id, "deleted").await?;
     Ok(())
 }
 
@@ -380,7 +440,7 @@ pub async fn history(
 }
 
 /// Resolve create defaults and native price normalization without writing.
-pub(super) async fn prepare_create(
+pub(crate) async fn prepare_create(
     conn: &mut PgConnection,
     workspace_id: Uuid,
     f: &Fields,
@@ -393,7 +453,7 @@ pub(super) async fn prepare_create(
 }
 
 /// Merge a patch with the same native priority and reference checks as the write.
-pub(super) async fn prepare_update(
+pub(crate) async fn prepare_update(
     conn: &mut PgConnection,
     workspace_id: Uuid,
     before: &ProductRow,
@@ -758,6 +818,8 @@ async fn embeds(
     e.stock_refs = refs.into_iter().map(|w| (w.id, w)).collect();
     e.store = store;
     let ids: Vec<Uuid> = all.iter().map(|p| p.id).collect();
+    e.custom_fields =
+        crate::modules::product_fields::repo::values(&state.db, workspace_id, &ids).await?;
     e.purchase_discounts = discounts::repo::purchase_discounts(&state.db, workspace_id, &ids)
         .await?
         .into_iter()
@@ -815,4 +877,175 @@ fn to_value(v: impl serde::Serialize) -> Result<Value, AppError> {
 /// Malformed id = unknown id = 404.
 fn parse(id: &str) -> Result<Uuid, AppError> {
     Uuid::parse_str(id).map_err(|_| AppError::NotFound)
+}
+
+/// Serialize identifier matching with every native catalog mutation and definition edit.
+pub(crate) async fn lock_identity(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    ws: Uuid,
+) -> Result<(), AppError> {
+    sqlx::query("SET LOCAL lock_timeout='5s'")
+        .execute(&mut **tx)
+        .await?;
+    sqlx::query(
+        "SELECT pg_advisory_xact_lock(hashtextextended('product_identity:' || $1::text,0))",
+    )
+    .bind(ws)
+    .execute(&mut **tx)
+    .await?;
+    Ok(())
+}
+
+/// Private import review data; never expose raw snapshots as public product resources.
+pub(crate) async fn snapshot_in(
+    conn: &mut PgConnection,
+    ws: Uuid,
+    id: Uuid,
+) -> Result<Value, AppError> {
+    let row = repo::find_locked(&mut *conn, ws, id)
+        .await?
+        .ok_or(AppError::NotFound)?;
+    let product = to_value(row.clone())?;
+    let custom_fields = crate::modules::product_fields::repo::values(&mut *conn, ws, &[id])
+        .await?
+        .remove(&id)
+        .unwrap_or_else(|| serde_json::json!({}));
+    let variants:Vec<Value>=sqlx::query_scalar("SELECT to_jsonb(v)-'workspace_id' FROM product_variants v WHERE workspace_id=$1 AND product_id=$2 AND inherits_price AND deleted_at IS NULL ORDER BY id FOR SHARE").bind(ws).bind(id).fetch_all(&mut *conn).await?;
+    let children:Vec<Value>=sqlx::query_scalar("SELECT to_jsonb(s) FROM product_sets s WHERE workspace_id=$1 AND product_id=$2 ORDER BY child_product_id").bind(ws).bind(id).fetch_all(&mut *conn).await?;
+    Ok(
+        serde_json::json!({"product":product,"custom_fields":custom_fields,"inheriting_variants":variants,"bundle_children":children,"dependencies":material_dependencies(conn,ws,&row).await?}),
+    )
+}
+async fn material_dependencies(
+    conn: &mut PgConnection,
+    ws: Uuid,
+    row: &ProductRow,
+) -> Result<Value, AppError> {
+    let currency = super::approval_repo::currency(conn, ws, row.currency_id).await?;
+    let vat = match row.vat_group_id {
+        Some(id) => super::approval_repo::vat(conn, ws, id).await?,
+        None => None,
+    };
+    // Keep reference meanings steady through the caller's comparison and mutation.
+    for (query, id) in [
+        (
+            "SELECT id FROM relations WHERE workspace_id=$1 AND id=$2 FOR SHARE",
+            row.supplier_relation_id,
+        ),
+        (
+            "SELECT id FROM product_categories WHERE workspace_id=$1 AND id=$2 FOR SHARE",
+            row.category_id,
+        ),
+        (
+            "SELECT id FROM sales_groups WHERE workspace_id=$1 AND id=$2 FOR SHARE",
+            row.sales_group_id,
+        ),
+        (
+            "SELECT id FROM warehouses WHERE workspace_id=$1 AND id=$2 FOR SHARE",
+            row.default_warehouse_id,
+        ),
+    ] {
+        if let Some(id) = id {
+            sqlx::query(query)
+                .bind(ws)
+                .bind(id)
+                .execute(&mut *conn)
+                .await?;
+        }
+    }
+    let mut fields = serde_json::to_value(
+        crate::modules::product_fields::repo::definitions(conn, ws, true).await?,
+    )
+    .map_err(|e| AppError::Internal(e.to_string()))?;
+    for field in fields.as_array_mut().unwrap() {
+        field.as_object_mut().unwrap().remove("used");
+    }
+    let references:Value=sqlx::query_scalar("SELECT jsonb_build_object('supplier',(SELECT jsonb_build_object('id',id,'updated_at',updated_at,'deleted_at',deleted_at) FROM relations WHERE workspace_id=$1 AND id=$2),'category',(SELECT to_jsonb(c) FROM product_categories c WHERE workspace_id=$1 AND id=$3),'sales_group',(SELECT to_jsonb(s) FROM sales_groups s WHERE workspace_id=$1 AND id=$4),'warehouse',(SELECT to_jsonb(w) FROM warehouses w WHERE workspace_id=$1 AND id=$5))")
+        .bind(ws).bind(row.supplier_relation_id).bind(row.category_id).bind(row.sales_group_id).bind(row.default_warehouse_id).fetch_one(&mut *conn).await?;
+    sqlx::query("SELECT workspace_id FROM settings WHERE workspace_id=$1 FOR SHARE")
+        .bind(ws)
+        .execute(&mut *conn)
+        .await?;
+    let numbering =
+        crate::modules::settings::service::section_or_default(&mut *conn, ws, "product").await?;
+    let stock_warehouses:Vec<Value>=sqlx::query_scalar("SELECT to_jsonb(w) FROM warehouses w WHERE workspace_id=$1 AND deleted_at IS NULL AND (default_warehouse OR is_store) ORDER BY id FOR SHARE").bind(ws).fetch_all(&mut *conn).await?;
+    Ok(
+        serde_json::json!({"currency":currency,"vat":vat,"field_definitions":fields,"references":references,"numbering":numbering,"stock_warehouses":stock_warehouses}),
+    )
+}
+
+/// Native projection plus complete before/dependency material for immutable import reviews.
+pub(crate) async fn material_in(
+    conn: &mut PgConnection,
+    ws: Uuid,
+    operation: &str,
+    id: Option<Uuid>,
+    values: &Value,
+) -> Result<Value, AppError> {
+    let mut before = if let Some(id) = id {
+        Some(snapshot_in(conn, ws, id).await?)
+    } else {
+        None
+    };
+    if operation == "delete" {
+        let id = id.ok_or(AppError::NotFound)?;
+        let variants: Vec<Value> = sqlx::query_scalar("SELECT to_jsonb(v)-'workspace_id' FROM product_variants v WHERE workspace_id=$1 AND product_id=$2 AND deleted_at IS NULL ORDER BY id FOR SHARE")
+            .bind(ws).bind(id).fetch_all(&mut *conn).await?;
+        // A stock writer can hold one slot while inserting another (taking product KEY SHARE).
+        // Refuse a busy snapshot rather than waiting while holding the product UPDATE lock.
+        let stocks: Vec<Value> = sqlx::query_scalar("SELECT jsonb_build_object('id',id,'warehouse_id',warehouse_id,'shelf_id',shelf_id,'bin_id',bin_id,'lot_id',lot_id,'stock_lvl',stock_lvl::text,'reserved',reserved::text,'minimal_stock_level',minimal_stock_level,'maximum_stock_level',maximum_stock_level) FROM stocks WHERE workspace_id=$1 AND product_id=$2 AND deleted_at IS NULL ORDER BY warehouse_id,bin_id NULLS FIRST,lot_id NULLS FIRST FOR SHARE NOWAIT")
+            .bind(ws).bind(id).fetch_all(&mut *conn).await.map_err(|error| {
+                if error.as_database_error().is_some_and(|e| e.code().as_deref()==Some("55P03")) {
+                    AppError::Conflict("Stock is being changed. Prepare a fresh review after that write finishes.")
+                } else { error.into() }
+            })?;
+        let nonzero_stock_rows = stocks
+            .iter()
+            .filter(|s| {
+                ["stock_lvl", "reserved"].iter().any(|k| {
+                    s[k].as_str()
+                        .and_then(|s| s.parse::<Decimal>().ok())
+                        .is_some_and(|n| !n.is_zero())
+                })
+            })
+            .count();
+        let before = before.as_mut().ok_or(AppError::NotFound)?;
+        before["delete_impact"] = serde_json::json!({"variant_count":variants.len(),"stock_rows":stocks.len(),"nonzero_stock_rows":nonzero_stock_rows});
+        before["all_variants"] = serde_json::json!(variants);
+        before["stocks"] = serde_json::json!(stocks);
+        return Ok(serde_json::json!({"before":before}));
+    }
+    let fields = super::dto::decode_values(values.clone(), operation == "create")?;
+    let row = if operation == "create" {
+        prepare_create(conn, ws, &fields).await?
+    } else if operation == "update" {
+        let current = repo::find_locked(&mut *conn, ws, id.ok_or(AppError::NotFound)?)
+            .await?
+            .ok_or(AppError::NotFound)?;
+        prepare_update(conn, ws, &current, &fields).await?
+    } else {
+        return Err(AppError::field(
+            "operation",
+            "Choose create, update or delete.",
+        ));
+    };
+    let custom_fields = crate::modules::product_fields::service::project(
+        conn,
+        ws,
+        id,
+        fields.custom_fields.as_ref(),
+    )
+    .await?;
+    let mut projected = to_value(row.clone())?;
+    projected.as_object_mut().unwrap().remove("created_at");
+    projected.as_object_mut().unwrap().remove("updated_at");
+    let bundle_children = if let Some(children) = &fields.set_children {
+        let ids: Vec<Uuid> = children.iter().map(|c| c.0).collect();
+        sqlx::query_scalar::<_,Value>("SELECT to_jsonb(p) FROM products p WHERE workspace_id=$1 AND id=ANY($2) ORDER BY id FOR SHARE").bind(ws).bind(ids).fetch_all(&mut *conn).await?
+    } else {
+        Vec::new()
+    };
+    Ok(
+        serde_json::json!({"before":before,"projected":projected,"custom_fields":custom_fields,"dependencies":material_dependencies(conn,ws,&row).await?,"bundle_children":bundle_children}),
+    )
 }

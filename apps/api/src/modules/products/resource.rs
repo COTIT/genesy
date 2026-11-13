@@ -32,6 +32,7 @@ use crate::{
 /// Everything a page of products embeds, loaded once per page.
 #[derive(Default)]
 pub struct Embeds {
+    pub custom_fields: HashMap<Uuid, Value>,
     pub vat_groups: HashMap<Uuid, VatGroupRow>,
     pub currencies: HashMap<Uuid, Value>,
     pub sales_groups: HashMap<Uuid, Value>,
@@ -188,6 +189,7 @@ pub fn render(p: &ProductRow, e: &Embeds, detail: bool) -> Value {
         "supplier_relation": p.supplier_relation_id.and_then(|id| e.suppliers.get(&id)),
         "attributes": null,
         "meta": p.meta,
+        "custom_fields": e.custom_fields.get(&p.id).cloned().unwrap_or_else(||json!({})),
         "association_data": [],
         "created_at": p.created_at,
         "last_updated_at": p.updated_at,
@@ -344,6 +346,8 @@ pub fn history_row(h: &crate::modules::products::repo::HistoryRow) -> Value {
         (`\"12.5000\"`); list rows leave `special_offers` and `child_products_from_set` empty."
 )]
 pub struct ProductDoc {
+    #[schema(value_type=Object)]
+    custom_fields: Value,
     id: Uuid,
     /// 4 decimals.
     purchase_price: String,

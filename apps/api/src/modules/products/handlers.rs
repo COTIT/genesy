@@ -115,7 +115,30 @@ pub async fn list(
         })?),
         _ => None,
     };
+    let raw_filters: Vec<crate::modules::product_fields::dto::FieldFilter> =
+        match q.custom_filters.as_deref() {
+            Some(text) if text.len() <= 65536 => serde_json::from_str(text).map_err(|_| {
+                AppError::field("custom_filters", "Use an array of custom-field filters.")
+            })?,
+            Some(_) => {
+                return Err(AppError::field(
+                    "custom_filters",
+                    "The filters are too large.",
+                ));
+            }
+            None => Vec::new(),
+        };
+    let custom_filters = {
+        let mut conn = state.db.acquire().await?;
+        crate::modules::product_fields::service::validate_filters(
+            &mut conn,
+            access.workspace_id,
+            &raw_filters,
+        )
+        .await?
+    };
     let filter = ListFilter {
+        custom_filters: &custom_filters,
         status,
         pattern: pattern.as_deref(),
         supplier,

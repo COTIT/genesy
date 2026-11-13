@@ -1,0 +1,1 @@
+DROP TABLE product_bulk_mappings,product_bulk_ai_costs,product_bulk_settings,product_bulk_review_rows,product_bulk_reviews,product_bulk_rows,product_bulk_sources,product_bulk_runs;

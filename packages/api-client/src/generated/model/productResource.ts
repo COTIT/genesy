@@ -7,6 +7,7 @@
  */
 import type { Link } from './link';
 import type { ProductResourceAttributes } from './productResourceAttributes';
+import type { ProductResourceCustomFields } from './productResourceCustomFields';
 import type { ProductResourceDefaultWarehouse } from './productResourceDefaultWarehouse';
 import type { ProductResourceDimensions } from './productResourceDimensions';
 import type { ProductResourceExportData } from './productResourceExportData';
@@ -54,6 +55,7 @@ export interface ProductResource {
      * @nullable
      */
   currency: string | null;
+  custom_fields: ProductResourceCustomFields;
   /**
      * The currency's minor-unit exponent, for display. Price strings stay major units.
      * @nullable

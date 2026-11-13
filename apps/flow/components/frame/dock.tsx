@@ -21,6 +21,7 @@ import type { SessionPhase } from "@genesy/voice/lib/presentation"
 import { Pills } from "@/components/discovery/pills" // F3
 import { EndCall } from "@/components/frame/conversation"
 import { TaskCapsule } from "@/components/task/capsule" // F4
+import { MigrationReviewHandoff } from "@/components/product-bulk/guidance"
 import { ResumePrompt } from "@/components/task/resume-prompt" // F4
 import { flowStore, useFlow } from "@/lib/flow-store"
 import type { Readiness } from "@/lib/readiness"
@@ -169,7 +170,12 @@ export function Dock({ phase }: { phase: SessionPhase["phase"] }) {
         data-flow-pane="dock"
         className="relative flex max-h-[calc(var(--flow-vh,100dvh)*0.45-5rem)] min-h-0 min-w-0 shrink flex-col gap-2 overflow-y-auto overscroll-y-contain [@media(max-height:500px)]:max-h-[calc(var(--flow-vh,100dvh)*0.45-1rem)]"
       >
-        <ConversationResults rows={voice.messages} completedRequestId={voice.completedRequestId} reportOpen={voice.reportOpen} onReportOpenChange={voice.setReportOpen} />
+        <ConversationResults
+          rows={voice.messages}
+          completedRequestId={voice.completedRequestId}
+          reportOpen={voice.reportOpen}
+          onReportOpenChange={voice.setReportOpen}
+        />
         {/* F3: dynamic suggestions; an instruction starts a text conversation, never the mic. */}
         <Pills
           disabled={Boolean(voice.review)}
@@ -225,7 +231,9 @@ export function Dock({ phase }: { phase: SessionPhase["phase"] }) {
           idle={!(voice.connected || voice.starting || voice.upgrading)}
         />{" "}
         {/* F4; P5-1: also after a reload, never while starting */}
-        {handoff ? (
+        {handoffHref.startsWith("/imports/products/") ? (
+          <MigrationReviewHandoff href={handoffHref} />
+        ) : handoff ? (
           <Notice variant="info" title={t("flow.chat.secureTitle")}>
             {handoffHref ? (
               <>

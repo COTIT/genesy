@@ -110,8 +110,52 @@ chain() { GENESY_ROOT="$t/root" bash -c ". '$lib/lib.sh' && env_setup staging &&
 touch "$lib/staging/secrets/b2_uploads_key"
 [[ "$(chain)" == *"$lib/staging/docker-compose.uploads.yml"* ]] || fail "staging uploads not chained"
 
+# The env file can retain an operator key; only the API's file credential enters the container.
+mkdir -p "$t/secrets"
+printf 'fixture-file-key' > "$t/secrets/anthropic_api_key"
+for env_file in "$t/prod.env" "$t/staging.env"; do
+  printf '\nSECRETS_DIR=%s\nANTHROPIC_API_KEY=fixture-env-key\n' "$t/secrets" >> "$env_file"
+done
+bulk_check() {
+  local env_file="$1" enabled="$2" args=()
+  shift 2
+  for f in "$@"; do args+=(-f "$f"); done
+  docker compose "${args[@]}" --env-file "$env_file" --profile cli --profile seed config --format json | python3 -c '
+import json, sys
+config = json.load(sys.stdin)
+api = config["services"]["api"]
+env = api["environment"]
+assert env["PRODUCT_BULK_ENABLED"] == sys.argv[1], "bulk admission flag"
+assert env["ANTHROPIC_API_KEY_FILE"] == "/run/secrets/anthropic_api_key", "bulk file credential"
+assert "ANTHROPIC_API_KEY" not in env, "plaintext/file credential collision"
+assert env["B2_UPLOADS_APPLICATION_KEY_FILE"] == "/run/secrets/b2_uploads_key", "uploads credential lost"
+assert env["PAYMENTS_PROVIDER"] == "stripe", "Stripe overlay lost"
+assert {x["source"] for x in api["secrets"]} >= {"database_url", "credentials_key", "b2_uploads_key", "stripe_secret_key", "anthropic_api_key"}, "API secret merge lost"
+assert config["secrets"]["anthropic_api_key"]["file"] == sys.argv[2] + "/anthropic_api_key", "bulk secret location"
+for service, value in config["services"].items():
+    assert "ANTHROPIC_API_KEY" not in value.get("environment", {}), service + " receives plaintext key"
+    if service != "api":
+        assert "ANTHROPIC_API_KEY_FILE" not in value.get("environment", {}), service + " receives provider config"
+        assert "anthropic_api_key" not in {x["source"] for x in value.get("secrets", [])}, service + " receives provider secret"
+' "$enabled" "$t/secrets" || fail "product bulk configuration: $env_file $enabled"
+}
+bulk_on=("${on[@]}" "$p/docker-compose.assistant.yml" "$p/docker-compose.product-bulk.yml")
+bulk_son=("${son[@]}" "$s/docker-compose.assistant.yml" "$s/docker-compose.product-bulk.yml")
+bulk_check "$t/prod.env" false "${bulk_on[@]}"
+bulk_check "$t/staging.env" false "${bulk_son[@]}"
+for env_file in "$t/prod.env" "$t/staging.env"; do
+  printf 'PRODUCT_BULK_ENABLED=true\n' >> "$env_file"
+done
+bulk_check "$t/prod.env" true "${bulk_on[@]}"
+bulk_check "$t/staging.env" true "${bulk_son[@]}"
+for env_file in "$t/prod.env" "$t/staging.env"; do
+  printf 'PRODUCT_BULK_ENABLED=false\n' >> "$env_file"
+done
+bulk_check "$t/prod.env" false "${bulk_on[@]}"
+bulk_check "$t/staging.env" false "${bulk_son[@]}"
+
 # Flow: its own public host; voice goes to Office over `internal` only. With every overlay on
-# (stripe, uploads, assistant) it still holds no secret, and Office gains no public route.
+# it still holds no secret, and Office gains no public route.
 # flow_check <env file> <flow host> <office host> <middlewares or -> <files…>
 flow_check() {
   local env_file="$1" host="$2" office="$3" mw="$4" args=()
@@ -147,13 +191,13 @@ assert o == ["Host(`" + office + "`)"], o
 ' "$host" "$office" "$mw" || fail "flow service wrong: $env_file $*"
 }
 flow_check "$t/prod.env" flow.genesy.app office.genesy.app - "$p/docker-compose.production.yml"
-flow_check "$t/prod.env" flow.genesy.app office.genesy.app - "${on[@]}" "$p/docker-compose.assistant.yml"
+flow_check "$t/prod.env" flow.genesy.app office.genesy.app - "${bulk_on[@]}"
 flow_check "$t/staging.env" staging-flow.genesy.app staging-office.genesy.app \
   genesy-staging-allow,genesy-staging-noindex "$s/docker-compose.staging.yml"
 flow_check "$t/staging.env" staging-flow.genesy.app staging-office.genesy.app \
-  genesy-staging-allow,genesy-staging-noindex "${son[@]}" "$s/docker-compose.assistant.yml"
+  genesy-staging-allow,genesy-staging-noindex "${bulk_son[@]}"
 
-# Assistant-only and all-four-file chains mount webhook authentication in Office alone.
+# Assistant-only and full overlay chains mount webhook authentication in Office alone.
 webhook_check() {
   local env_file="$1" args=()
   shift
@@ -174,9 +218,9 @@ for service, value in config["services"].items():
 ' || fail "webhook secret isolation: $env_file $*"
 }
 webhook_check "$t/prod.env" "$p/docker-compose.production.yml" "$p/docker-compose.assistant.yml"
-webhook_check "$t/prod.env" "${on[@]}" "$p/docker-compose.assistant.yml"
+webhook_check "$t/prod.env" "${bulk_on[@]}"
 webhook_check "$t/staging.env" "$s/docker-compose.staging.yml" "$s/docker-compose.assistant.yml"
-webhook_check "$t/staging.env" "${son[@]}" "$s/docker-compose.assistant.yml"
+webhook_check "$t/staging.env" "${bulk_son[@]}"
 
 # Field in production: RUAHA's own domain serves it; the old genesy host 301s there, keeping the path.
 docker compose -f "$p/docker-compose.production.yml" --env-file "$t/prod.env" config --format json | python3 -c '
